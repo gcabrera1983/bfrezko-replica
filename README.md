@@ -1,36 +1,115 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BFREZKO Replica
 
-## Getting Started
+Réplica de una tienda de ropa estilo BFREZKO construida con Next.js 14, React, TypeScript y Tailwind CSS.
 
-First, run the development server:
+## 🚀 Características
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Página de Inicio** - Hero banner, productos destacados, newsletter
+- **Catálogo de Productos** - Filtros por categoría, precio, ordenamiento
+- **Detalle de Producto** - Selector de tallas/colores, galería de imágenes
+- **Carrito de Compras** - Persistencia en localStorage, actualización de cantidades
+- **Checkout** - Formulario de envío, pago contra entrega (demo)
+- **Diseño Responsive** - Optimizado para móvil, tablet y desktop
+
+## 🛠️ Tecnologías
+
+- [Next.js 14](https://nextjs.org/) - Framework React con App Router
+- [React 18](https://react.dev/) - Biblioteca UI
+- [TypeScript](https://www.typescriptlang.org/) - Tipado estático
+- [Tailwind CSS](https://tailwindcss.com/) - Framework CSS
+- [Framer Motion](https://www.framer.com/motion/) - Animaciones
+- [Lucide React](https://lucide.dev/) - Iconos
+
+## 📁 Estructura del Proyecto
+
+```
+bfrezko-replica/
+├── src/
+│   ├── app/                    # App Router de Next.js
+│   │   ├── page.tsx            # Página de inicio
+│   │   ├── layout.tsx          # Layout principal
+│   │   ├── tienda/             # Página de catálogo
+│   │   ├── producto/[id]/      # Página de producto
+│   │   ├── carrito/            # Página de carrito
+│   │   └── checkout/           # Página de checkout
+│   ├── components/
+│   │   ├── Header.tsx          # Navegación principal
+│   │   ├── Footer.tsx          # Pie de página
+│   │   ├── products/           # Componentes de productos
+│   │   └── ui/                 # Componentes UI reutilizables
+│   ├── context/
+│   │   └── CartContext.tsx     # Contexto del carrito
+│   ├── data/
+│   │   └── products.ts         # Datos de productos
+│   ├── types/
+│   │   └── index.ts            # Tipos TypeScript
+│   └── lib/
+│       └── utils.ts            # Utilidades
+├── public/                     # Archivos estáticos
+└── next.config.mjs            # Configuración de Next.js
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 Iniciar el Proyecto
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Requisitos
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Node.js 18+
+- npm o yarn
 
-## Learn More
+### Instalación
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# Instalar dependencias
+npm install
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Iniciar servidor de desarrollo
+npm run dev
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# O iniciar servidor de producción (requiere build)
+npm run build
+npm start
+```
 
-## Deploy on Vercel
+El servidor estará disponible en `http://localhost:3000`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📝 Notas
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Los productos están almacenados en `/src/data/products.ts`
+- El carrito persiste en localStorage
+- Las imágenes se cargan desde Unsplash
+- El checkout es una simulación (no procesa pagos reales)
+
+## 🎨 Personalización
+
+### Agregar Nuevos Productos
+
+Edita el archivo `src/data/products.ts` y añade nuevos objetos al array `products`:
+
+```typescript
+{
+  id: "producto-nuevo",
+  name: "Nombre del Producto",
+  description: "Descripción...",
+  price: 99.99,
+  image: "url-de-imagen",
+  images: ["url1", "url2"],
+  category: "Categoría",
+  tags: ["tag1", "tag2"],
+  sizes: ["S", "M", "L"],
+  colors: [{ name: "Rojo", value: "#FF0000" }],
+  inStock: true,
+  isNew: true,
+  isBestseller: false
+}
+```
+
+### Cambiar Colores/Temas
+
+Modifica las clases de Tailwind en los componentes. Los colores principales están en:
+- Fondo blanco: `bg-white`
+- Texto negro: `text-black` / `bg-black`
+- Grises: `gray-50`, `gray-100`, `gray-600`, etc.
+
+## 📄 Licencia
+
+Este proyecto es una réplica educativa. Los derechos del diseño original pertenecen a BFREZKO.
