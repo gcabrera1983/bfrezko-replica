@@ -4,111 +4,19 @@ import { products as demoProducts } from '@/data/products'
 
 const API_BASE = '/api'
 
-// Modo demo: usa productos locales si no hay base de datos
-// Forzamos DEMO_MODE si no hay DATABASE_URL configurada
-const hasDatabase = !!process.env.DATABASE_URL && process.env.DATABASE_URL !== ''
-const isClient = typeof window !== 'undefined'
+// Detectar si estamos en modo demo o producción
+// En producción usamos DATABASE_URL
+const DEMO_MODE = !process.env.DATABASE_URL
 
-// En cliente: siempre demo (no hay conexión directa a DB desde navegador)
-// En servidor: demo si no hay DATABASE_URL
-const DEMO_MODE = isClient || !hasDatabase
+// ======= MODO PRODUCCIÓN CON BASE DE DATOS =======
 
-// ======= ORDENES EN LOCALSTORAGE (MODO DEMO) =======
-// Almacenamiento en memoria para el servidor (Vercel)
-let serverOrders: Order[] | null = null
-
-const getDemoOrders = (): Order[] => {
-  if (typeof window === 'undefined') {
-    // En servidor, usar variable en memoria
-    return serverOrders ? [...serverOrders] : []
-  }
-  // En cliente, usar localStorage
-  const orders = localStorage.getItem('agape-demo-orders')
-  return orders ? JSON.parse(orders) : []
-}
-
-const saveDemoOrders = (orders: Order[]) => {
-  if (typeof window === 'undefined') {
-    // En servidor, guardar en variable en memoria
-    serverOrders = [...orders]
-    return
-  }
-  // En cliente, guardar en localStorage
-  localStorage.setItem('agape-demo-orders', JSON.stringify(orders))
-}
-
-// ======= PRODUCTOS EN LOCALSTORAGE (MODO DEMO) =======
-const DEMO_PRODUCTS_KEY = 'agape-demo-products'
-
-// Almacenamiento en memoria para el servidor (Vercel)
-let serverProducts: Product[] | null = null
-
-const getDemoProducts = (): Product[] => {
-  if (typeof window === 'undefined') {
-    // En servidor, usar variable en memoria
-    return serverProducts ? [...serverProducts] : [...demoProducts]
-  }
-  // En cliente, usar localStorage
-  const products = localStorage.getItem(DEMO_PRODUCTS_KEY)
-  return products ? JSON.parse(products) : [...demoProducts]
-}
-
-const saveDemoProducts = (products: Product[]) => {
-  if (typeof window === 'undefined') {
-    // En servidor, guardar en variable en memoria
-    serverProducts = [...products]
-    return
-  }
-  // En cliente, guardar en localStorage con manejo de error
-  try {
-    localStorage.setItem(DEMO_PRODUCTS_KEY, JSON.stringify(products))
-  } catch (e: any) {
-    if (e.name === 'QuotaExceededError') {
-      console.warn('[saveDemoProducts] localStorage lleno, limpiando...')
-      // Limpiar y reintentar
-      localStorage.clear()
-      try {
-        localStorage.setItem(DEMO_PRODUCTS_KEY, JSON.stringify(products))
-      } catch (e2) {
-        console.error('[saveDemoProducts] No se pudo guardar en localStorage')
-      }
-    } else {
-      throw e
-    }
-  }
-}
-
-// Productos
+// Productos API
 export async function fetchProducts(params?: { 
   category?: string 
   isNew?: boolean 
   isBestseller?: boolean 
   search?: string 
 }): Promise<Product[]> {
-  if (DEMO_MODE) {
-    let filtered = [...getDemoProducts()]
-    
-    if (params?.category) {
-      filtered = filtered.filter(p => p.category === params.category)
-    }
-    if (params?.isNew) {
-      filtered = filtered.filter(p => p.isNew)
-    }
-    if (params?.isBestseller) {
-      filtered = filtered.filter(p => p.isBestseller)
-    }
-    if (params?.search) {
-      const search = params.search.toLowerCase()
-      filtered = filtered.filter(p => 
-        p.name.toLowerCase().includes(search) ||
-        p.description.toLowerCase().includes(search) ||
-        p.tags.some(t => t.toLowerCase().includes(search))
-      )
-    }
-    
-    return filtered
-  }
-
   const queryParams = new URLSearchParams()
   if (params?.category) queryParams.set('category', params.category)
   if (params?.isNew) queryParams.set('isNew', 'true')
@@ -121,27 +29,12 @@ export async function fetchProducts(params?: {
 }
 
 export async function fetchProduct(id: string): Promise<Product | undefined> {
-  if (DEMO_MODE) {
-    return getDemoProducts().find(p => p.id === id)
-  }
-
   const res = await fetch(`${API_BASE}/products/${id}`)
   if (!res.ok) throw new Error('Producto no encontrado')
   return res.json()
 }
 
 export async function createProduct(product: Omit<Product, 'id'>): Promise<Product> {
-  if (DEMO_MODE) {
-    const products = getDemoProducts()
-    const newProduct: Product = {
-      ...product,
-      id: 'prod-' + Date.now()
-    }
-    products.push(newProduct)
-    saveDemoProducts(products)
-    return newProduct
-  }
-
   const res = await fetch(`${API_BASE}/products`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -152,33 +45,6 @@ export async function createProduct(product: Omit<Product, 'id'>): Promise<Produ
 }
 
 export async function updateProduct(id: string, product: Partial<Product>): Promise<Product> {
-  console.log('[updateProduct] DEMO_MODE:', DEMO_MODE, 'ID:', id)
-  
-  if (DEMO_MODE) {
-    const products = getDemoProducts()
-    console.log('[updateProduct] Productos cargados:', products.length)
-    console.log('[updateProduct] Buscando ID:', id)
-    console.log('[updateProduct] IDs disponibles:', products.map(p => p.id))
-    
-    const index = products.findIndex(p => p.id === id)
-    console.log('[updateProduct] Índice encontrado:', index)
-    
-    if (index === -1) {
-      console.error('[updateProduct] Producto no encontrado:', id)
-      throw new Error('Producto no encontrado')
-    }
-    
-    const updatedProduct = {
-      ...products[index],
-      ...product,
-      id // Mantener el ID original
-    }
-    products[index] = updatedProduct
-    saveDemoProducts(products)
-    console.log('[updateProduct] Producto actualizado:', updatedProduct.name)
-    return updatedProduct
-  }
-
   const res = await fetch(`${API_BASE}/products/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -189,20 +55,25 @@ export async function updateProduct(id: string, product: Partial<Product>): Prom
 }
 
 export async function deleteProduct(id: string): Promise<void> {
-  if (DEMO_MODE) {
-    const products = getDemoProducts()
-    const filtered = products.filter(p => p.id !== id)
-    saveDemoProducts(filtered)
-    return
-  }
-
   const res = await fetch(`${API_BASE}/products/${id}`, {
     method: 'DELETE'
   })
   if (!res.ok) throw new Error('Error eliminando producto')
 }
 
-// Órdenes
+// Órdenes API
+export async function fetchOrders(): Promise<Order[]> {
+  const res = await fetch(`${API_BASE}/orders`)
+  if (!res.ok) throw new Error('Error cargando órdenes')
+  return res.json()
+}
+
+export async function fetchOrder(id: string): Promise<Order | null> {
+  const res = await fetch(`${API_BASE}/orders/${id}`)
+  if (!res.ok) throw new Error('Orden no encontrada')
+  return res.json()
+}
+
 export async function createOrder(orderData: {
   items: any[]
   customer: {
@@ -220,44 +91,6 @@ export async function createOrder(orderData: {
   total: number
   shippingCost: number
 }): Promise<Order> {
-  const order: Order = {
-    id: 'ORD-' + Date.now(),
-    status: 'PENDING',
-    total: orderData.total,
-    shippingCost: orderData.shippingCost,
-    customerEmail: orderData.customer.email,
-    customerName: `${orderData.customer.firstName} ${orderData.customer.lastName}`,
-    customerPhone: orderData.customer.phone,
-    address: orderData.shipping.address,
-    city: orderData.shipping.city,
-    department: orderData.shipping.department,
-    postalCode: orderData.shipping.postalCode,
-    paymentStatus: 'PENDING',
-    items: orderData.items.map((item, i) => ({
-      id: `item-${i}`,
-      quantity: item.quantity,
-      price: item.price,
-      size: item.size,
-      color: item.color,
-      productId: item.productId,
-      product: {
-        id: item.productId,
-        name: item.name,
-        image: item.image || ''
-      }
-    })),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }
-
-  if (DEMO_MODE) {
-    // Guardar en localStorage
-    const orders = getDemoOrders()
-    orders.unshift(order)
-    saveDemoOrders(orders)
-    return order
-  }
-
   const res = await fetch(`${API_BASE}/orders`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -267,38 +100,7 @@ export async function createOrder(orderData: {
   return res.json()
 }
 
-export async function fetchOrders(): Promise<Order[]> {
-  if (DEMO_MODE) {
-    return getDemoOrders()
-  }
-
-  const res = await fetch(`${API_BASE}/orders`)
-  if (!res.ok) throw new Error('Error cargando órdenes')
-  return res.json()
-}
-
-export async function fetchOrder(id: string): Promise<Order | null> {
-  if (DEMO_MODE) {
-    const orders = getDemoOrders()
-    return orders.find(o => o.id === id) || null
-  }
-
-  const res = await fetch(`${API_BASE}/orders/${id}`)
-  if (!res.ok) throw new Error('Orden no encontrada')
-  return res.json()
-}
-
 export async function updateOrder(id: string, updates: Partial<Order>): Promise<Order> {
-  if (DEMO_MODE) {
-    const orders = getDemoOrders()
-    const index = orders.findIndex(o => o.id === id)
-    if (index === -1) throw new Error('Orden no encontrada')
-    
-    orders[index] = { ...orders[index], ...updates, updatedAt: new Date().toISOString() }
-    saveDemoOrders(orders)
-    return orders[index]
-  }
-
   const res = await fetch(`${API_BASE}/orders/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -308,21 +110,152 @@ export async function updateOrder(id: string, updates: Partial<Order>): Promise<
   return res.json()
 }
 
-// Checkout Wompi (ya no se usa, mantenido por compatibilidad)
-export async function initiateWompiPayment(data: {
-  orderId: string
-  amount: number
-  customerEmail: string
-  customerName: string
-  redirectUrl?: string
-}): Promise<any> {
-  return {
-    transactionId: `demo_${Date.now()}`,
-    reference: `ORDER-${data.orderId}-${Date.now()}`,
-    amount: data.amount,
-    currency: 'GTQ',
-    status: 'PENDING',
-    checkoutUrl: `/checkout/success?orderId=${data.orderId}`,
-    sandbox: true
+export async function deleteOrder(id: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/orders/${id}`, {
+    method: 'DELETE'
+  })
+  if (!res.ok) throw new Error('Error eliminando orden')
+}
+
+// ======= MODO DEMO (Fallback sin base de datos) =======
+// Estas funciones se usan cuando no hay DATABASE_URL configurada
+
+// Almacenamiento en memoria para modo demo
+let demoProductsStorage: Product[] | null = null
+let demoOrdersStorage: Order[] | null = null
+
+const getDemoProducts = (): Product[] => {
+  if (!demoProductsStorage) {
+    demoProductsStorage = [...demoProducts]
+  }
+  return demoProductsStorage
+}
+
+const saveDemoProducts = (products: Product[]) => {
+  demoProductsStorage = [...products]
+}
+
+const getDemoOrders = (): Order[] => {
+  if (!demoOrdersStorage) {
+    demoOrdersStorage = []
+  }
+  return demoOrdersStorage
+}
+
+const saveDemoOrders = (orders: Order[]) => {
+  demoOrdersStorage = [...orders]
+}
+
+// Funciones de modo demo (se exportan solo si DEMO_MODE es true)
+export const demoApi = {
+  fetchProducts: async (params?: any): Promise<Product[]> => {
+    let filtered = [...getDemoProducts()]
+    
+    if (params?.category) {
+      filtered = filtered.filter(p => p.category === params.category)
+    }
+    if (params?.isNew) {
+      filtered = filtered.filter(p => p.isNew)
+    }
+    if (params?.isBestseller) {
+      filtered = filtered.filter(p => p.isBestseller)
+    }
+    if (params?.search) {
+      const search = params.search.toLowerCase()
+      filtered = filtered.filter(p => 
+        p.name.toLowerCase().includes(search) ||
+        p.description.toLowerCase().includes(search)
+      )
+    }
+    
+    return filtered
+  },
+  
+  fetchProduct: async (id: string): Promise<Product | undefined> => {
+    return getDemoProducts().find(p => p.id === id)
+  },
+  
+  createProduct: async (product: Omit<Product, 'id'>): Promise<Product> => {
+    const newProduct: Product = {
+      ...product,
+      id: 'prod-' + Date.now()
+    }
+    const products = getDemoProducts()
+    products.push(newProduct)
+    saveDemoProducts(products)
+    return newProduct
+  },
+  
+  updateProduct: async (id: string, updates: Partial<Product>): Promise<Product> => {
+    const products = getDemoProducts()
+    const index = products.findIndex(p => p.id === id)
+    if (index === -1) throw new Error('Producto no encontrado')
+    
+    const updatedProduct = { ...products[index], ...updates, id }
+    products[index] = updatedProduct
+    saveDemoProducts(products)
+    return updatedProduct
+  },
+  
+  deleteProduct: async (id: string): Promise<void> => {
+    const products = getDemoProducts()
+    const filtered = products.filter(p => p.id !== id)
+    saveDemoProducts(filtered)
+  },
+  
+  fetchOrders: async (): Promise<Order[]> => {
+    return getDemoOrders()
+  },
+  
+  fetchOrder: async (id: string): Promise<Order | null> => {
+    return getDemoOrders().find(o => o.id === id) || null
+  },
+  
+  createOrder: async (orderData: any): Promise<Order> => {
+    const order: Order = {
+      id: 'ORD-' + Date.now(),
+      status: 'PENDING',
+      total: orderData.total,
+      shippingCost: orderData.shippingCost,
+      customerEmail: orderData.customer.email,
+      customerName: `${orderData.customer.firstName} ${orderData.customer.lastName}`,
+      customerPhone: orderData.customer.phone,
+      address: orderData.shipping.address,
+      city: orderData.shipping.city,
+      department: orderData.shipping.department,
+      postalCode: orderData.shipping.postalCode,
+      paymentStatus: 'PENDING',
+      items: orderData.items.map((item: any, i: number) => ({
+        id: `item-${i}`,
+        quantity: item.quantity,
+        price: item.price,
+        size: item.size,
+        color: item.color,
+        productId: item.productId,
+        product: {
+          id: item.productId,
+          name: item.name,
+          image: item.image || ''
+        }
+      })),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+    
+    const orders = getDemoOrders()
+    orders.unshift(order)
+    saveDemoOrders(orders)
+    return order
+  },
+  
+  updateOrder: async (id: string, updates: Partial<Order>): Promise<Order> => {
+    const orders = getDemoOrders()
+    const index = orders.findIndex(o => o.id === id)
+    if (index === -1) throw new Error('Orden no encontrada')
+    
+    const updatedOrder = { ...orders[index], ...updates, id }
+    orders[index] = updatedOrder
+    saveDemoOrders(orders)
+    return updatedOrder
   }
 }

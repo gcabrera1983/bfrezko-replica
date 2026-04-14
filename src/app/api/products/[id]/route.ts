@@ -1,35 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { products as demoProducts } from '@/data/products'
+import { prisma } from '@/lib/prisma'
 
-const DEMO_MODE = !process.env.DATABASE_URL
-
-// GET /api/products/[id] - Obtener producto por ID
+// GET /api/products/[id] - Obtener producto
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params
-
-    // Modo demo
-    if (DEMO_MODE) {
-      const product = demoProducts.find(p => p.id === id)
-      
-      if (!product) {
-        return NextResponse.json(
-          { error: 'Producto no encontrado' },
-          { status: 404 }
-        )
-      }
-
-      return NextResponse.json(product)
-    }
-
-    // Modo producción
-    const { prisma } = await import('@/lib/prisma')
-    
     const product = await prisma.product.findUnique({
-      where: { id }
+      where: { id: params.id }
     })
 
     if (!product) {
@@ -55,17 +34,9 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    if (DEMO_MODE) {
-      return NextResponse.json(
-        { error: 'Modo demo: no se pueden actualizar productos' },
-        { status: 403 }
-      )
-    }
-
     const body = await request.json()
-    const { prisma } = await import('@/lib/prisma')
 
-    const updated = await prisma.product.update({
+    const product = await prisma.product.update({
       where: { id: params.id },
       data: {
         name: body.name,
@@ -84,7 +55,7 @@ export async function PUT(
       }
     })
 
-    return NextResponse.json(updated)
+    return NextResponse.json(product)
   } catch (error) {
     console.error('Error updating product:', error)
     return NextResponse.json(
@@ -100,15 +71,6 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    if (DEMO_MODE) {
-      return NextResponse.json(
-        { error: 'Modo demo: no se pueden eliminar productos' },
-        { status: 403 }
-      )
-    }
-
-    const { prisma } = await import('@/lib/prisma')
-    
     await prisma.product.delete({
       where: { id: params.id }
     })
