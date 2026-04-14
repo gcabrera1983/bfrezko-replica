@@ -5,8 +5,13 @@ import { products as demoProducts } from '@/data/products'
 const API_BASE = '/api'
 
 // Modo demo: usa productos locales si no hay base de datos
-// En cliente, siempre usamos demo mode (no hay conexión a Supabase desde el navegador)
-const DEMO_MODE = typeof window !== 'undefined' || !process.env.DATABASE_URL
+// Forzamos DEMO_MODE si no hay DATABASE_URL configurada
+const hasDatabase = !!process.env.DATABASE_URL && process.env.DATABASE_URL !== ''
+const isClient = typeof window !== 'undefined'
+
+// En cliente: siempre demo (no hay conexión directa a DB desde navegador)
+// En servidor: demo si no hay DATABASE_URL
+const DEMO_MODE = isClient || !hasDatabase
 
 // ======= ORDENES EN LOCALSTORAGE (MODO DEMO) =======
 // Almacenamiento en memoria para el servidor (Vercel)
@@ -132,10 +137,21 @@ export async function createProduct(product: Omit<Product, 'id'>): Promise<Produ
 }
 
 export async function updateProduct(id: string, product: Partial<Product>): Promise<Product> {
+  console.log('[updateProduct] DEMO_MODE:', DEMO_MODE, 'ID:', id)
+  
   if (DEMO_MODE) {
     const products = getDemoProducts()
+    console.log('[updateProduct] Productos cargados:', products.length)
+    console.log('[updateProduct] Buscando ID:', id)
+    console.log('[updateProduct] IDs disponibles:', products.map(p => p.id))
+    
     const index = products.findIndex(p => p.id === id)
-    if (index === -1) throw new Error('Producto no encontrado')
+    console.log('[updateProduct] Índice encontrado:', index)
+    
+    if (index === -1) {
+      console.error('[updateProduct] Producto no encontrado:', id)
+      throw new Error('Producto no encontrado')
+    }
     
     const updatedProduct = {
       ...products[index],
@@ -144,6 +160,7 @@ export async function updateProduct(id: string, product: Partial<Product>): Prom
     }
     products[index] = updatedProduct
     saveDemoProducts(products)
+    console.log('[updateProduct] Producto actualizado:', updatedProduct.name)
     return updatedProduct
   }
 
