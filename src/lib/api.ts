@@ -40,16 +40,6 @@ const saveDemoOrders = (orders: Order[]) => {
 // ======= PRODUCTOS EN LOCALSTORAGE (MODO DEMO) =======
 const DEMO_PRODUCTS_KEY = 'agape-demo-products'
 
-// Limpiar localStorage al cargar para evitar problemas de quota
-if (typeof window !== 'undefined') {
-  try {
-    localStorage.removeItem(DEMO_PRODUCTS_KEY)
-    console.log('[api.ts] localStorage limpiado al inicio')
-  } catch (e) {
-    console.warn('[api.ts] No se pudo limpiar localStorage')
-  }
-}
-
 // Almacenamiento en memoria para el servidor (Vercel)
 let serverProducts: Product[] | null = null
 
