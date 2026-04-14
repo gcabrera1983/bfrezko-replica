@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
-import { Upload, X, ImageIcon, GripVertical } from "lucide-react";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { Upload, X, ImageIcon } from "lucide-react";
+import { saveImage, getImage, createStoredImageUrl, getStoredImageId, isStoredImage } from "@/lib/imageStorage";
 
 interface MultiImageUploadProps {
   images: string[];
@@ -18,9 +19,32 @@ export default function MultiImageUpload({
 }: MultiImageUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [displayImages, setDisplayImages] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = useCallback((files: FileList | null) => {
+  // Cargar imágenes reales para mostrar
+  useEffect(() => {
+    const loadImages = async () => {
+      const loaded: string[] = [];
+      for (const img of images) {
+        if (isStoredImage(img)) {
+          const id = getStoredImageId(img);
+          if (id) {
+            const dataUrl = await getImage(id);
+            loaded.push(dataUrl || img);
+          } else {
+            loaded.push(img);
+          }
+        } else {
+          loaded.push(img);
+        }
+      }
+      setDisplayImages(loaded);
+    };
+    loadImages();
+  }, [images]);
+
+  const handleFileChange = useCallback(async (files: FileList | null) => {
     if (!files || files.length === 0) return;
 
     const remainingSlots = maxImages - images.length;
@@ -32,39 +56,39 @@ export default function MultiImageUpload({
     }
 
     setIsLoading(true);
-    const newImages: string[] = [];
-    let processedCount = 0;
+    const newImageUrls: string[] = [];
 
-    Array.from(files).slice(0, filesToProcess).forEach((file) => {
+    for (const file of Array.from(files).slice(0, filesToProcess)) {
       // Validar tipo de archivo
       if (!file.type.startsWith("image/")) {
-        processedCount++;
-        return;
+        continue;
       }
 
-      // Validar tamaño (máximo 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert(`"${file.name}" es demasiado grande. Máximo 5MB`);
-        processedCount++;
-        return;
+      // Validar tamaño (máximo 2MB para IndexedDB)
+      if (file.size > 2 * 1024 * 1024) {
+        alert(`"${file.name}" es demasiado grande. Máximo 2MB para modo demo. Usa URLs de imágenes externas para archivos más grandes.`);
+        continue;
       }
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        newImages.push(reader.result as string);
-        processedCount++;
-        
-        if (processedCount === filesToProcess) {
-          onChange([...images, ...newImages]);
-          setIsLoading(false);
-        }
-      };
-      reader.onerror = () => {
-        processedCount++;
-        console.error(`Error al cargar ${file.name}`);
-      };
-      reader.readAsDataURL(file);
-    });
+      try {
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
+        // Guardar en IndexedDB y obtener URL virtual
+        const imageId = `img-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        await saveImage(imageId, dataUrl);
+        newImageUrls.push(createStoredImageUrl(imageId));
+      } catch (error) {
+        console.error(`Error al procesar ${file.name}:`, error);
+      }
+    }
+
+    onChange([...images, ...newImageUrls]);
+    setIsLoading(false);
   }, [images, maxImages, onChange]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -117,6 +141,11 @@ export default function MultiImageUpload({
       alert(`Máximo ${maxImages} imágenes permitidas`);
       return;
     }
+    // Validar que sea URL válida
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      alert('La URL debe comenzar con http:// o https://');
+      return;
+    }
     onChange([...images, url.trim()]);
   }, [images, maxImages, onChange]);
 
@@ -134,11 +163,11 @@ export default function MultiImageUpload({
       </label>
 
       {/* Grid de imágenes */}
-      {images.length > 0 && (
+      {displayImages.length > 0 && (
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-          {images.map((image, index) => (
+          {displayImages.map((image, index) => (
             <div
-              key={`${image}-${index}`}
+              key={`${images[index] || image}-${index}`}
               className={`relative aspect-square bg-[#F6D3B3]/10 rounded-lg overflow-hidden group ${
                 index === 0 ? "ring-2 ring-[#6B4423]" : ""
               }`}
@@ -235,7 +264,7 @@ export default function MultiImageUpload({
                     Arrastra imágenes aquí o haz clic para seleccionar
                   </p>
                   <p className="font-cormorant text-xs text-[#6B4423]/60 mt-1">
-                    Máximo {remainingSlots} más • JPG, PNG, WEBP • 5MB cada una
+                    Máximo {remainingSlots} más • JPG, PNG, WEBP • 2MB cada una
                   </p>
                 </>
               )}
@@ -257,7 +286,7 @@ export default function MultiImageUpload({
                     setUrlInput("");
                   }
                 }}
-                placeholder="O agrega URL de imagen..."
+                placeholder="O agrega URL de imagen (https://...)"
                 className="w-full pl-9 pr-4 py-2 border border-[#6B4423]/20 font-cormorant text-sm focus:outline-none focus:border-[#6B4423]"
               />
             </div>
@@ -277,7 +306,7 @@ export default function MultiImageUpload({
       )}
 
       <p className="font-cormorant text-xs text-[#6B4423]/60">
-        💡 La primera imagen será la principal. Arrastra o usa las flechas para reordenar.
+        💡 La primera imagen será la principal. Para imágenes grandes, usa URLs externas (Unsplash, Cloudinary, etc.)
       </p>
     </div>
   );
