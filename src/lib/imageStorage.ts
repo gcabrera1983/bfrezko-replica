@@ -1,22 +1,82 @@
 // Almacenamiento de imágenes usando IndexedDB (más espacio que localStorage)
+// Fallback a localStorage para móviles con problemas de IndexedDB
 
 const DB_NAME = 'agape-images-db';
 const DB_VERSION = 1;
 const STORE_NAME = 'images';
+const FALLBACK_KEY = 'agape-images-fallback';
 
 let db: IDBDatabase | null = null;
+let useFallback = false;
+
+// Verificar si IndexedDB está disponible (no en modo privado)
+const isIndexedDBAvailable = (): boolean => {
+  try {
+    return !!window.indexedDB;
+  } catch {
+    return false;
+  }
+};
+
+// Fallback storage usando localStorage con compresión básica
+const fallbackStorage = {
+  get: (id: string): string | null => {
+    try {
+      const data = localStorage.getItem(`${FALLBACK_KEY}-${id}`);
+      return data;
+    } catch {
+      return null;
+    }
+  },
+  set: (id: string, dataUrl: string): boolean => {
+    try {
+      localStorage.setItem(`${FALLBACK_KEY}-${id}`, dataUrl);
+      return true;
+    } catch {
+      console.warn('[imageStorage] Fallback lleno, limpiando...');
+      // Limpiar imágenes antiguas del fallback
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key?.startsWith(FALLBACK_KEY)) {
+          localStorage.removeItem(key);
+        }
+      }
+      try {
+        localStorage.setItem(`${FALLBACK_KEY}-${id}`, dataUrl);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+  }
+};
 
 // Inicializar IndexedDB
 const initDB = (): Promise<IDBDatabase> => {
   return new Promise((resolve, reject) => {
+    if (useFallback) {
+      reject(new Error('Using fallback'));
+      return;
+    }
+    
     if (db) {
       resolve(db);
       return;
     }
 
+    if (!isIndexedDBAvailable()) {
+      useFallback = true;
+      reject(new Error('IndexedDB not available'));
+      return;
+    }
+
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-    request.onerror = () => reject(request.error);
+    request.onerror = () => {
+      useFallback = true;
+      reject(request.error);
+    };
+    
     request.onsuccess = () => {
       db = request.result;
       resolve(db);
@@ -28,36 +88,54 @@ const initDB = (): Promise<IDBDatabase> => {
         database.createObjectStore(STORE_NAME, { keyPath: 'id' });
       }
     };
+    
+    // Timeout para móviles lentos
+    setTimeout(() => {
+      if (!db) {
+        useFallback = true;
+        reject(new Error('IndexedDB timeout'));
+      }
+    }, 3000);
   });
 };
 
 // Guardar imagen
 export const saveImage = async (id: string, dataUrl: string): Promise<void> => {
-  const database = await initDB();
-  return new Promise((resolve, reject) => {
-    const transaction = database.transaction([STORE_NAME], 'readwrite');
-    const store = transaction.objectStore(STORE_NAME);
-    const request = store.put({ id, dataUrl, timestamp: Date.now() });
+  try {
+    const database = await initDB();
+    return new Promise((resolve, reject) => {
+      const transaction = database.transaction([STORE_NAME], 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.put({ id, dataUrl, timestamp: Date.now() });
 
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
-  });
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  } catch {
+    // Usar fallback
+    fallbackStorage.set(id, dataUrl);
+  }
 };
 
 // Obtener imagen
 export const getImage = async (id: string): Promise<string | null> => {
-  const database = await initDB();
-  return new Promise((resolve, reject) => {
-    const transaction = database.transaction([STORE_NAME], 'readonly');
-    const store = transaction.objectStore(STORE_NAME);
-    const request = store.get(id);
+  try {
+    const database = await initDB();
+    return new Promise((resolve, reject) => {
+      const transaction = database.transaction([STORE_NAME], 'readonly');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.get(id);
 
-    request.onsuccess = () => {
-      const result = request.result;
-      resolve(result ? result.dataUrl : null);
-    };
-    request.onerror = () => reject(request.error);
-  });
+      request.onsuccess = () => {
+        const result = request.result;
+        resolve(result ? result.dataUrl : null);
+      };
+      request.onerror = () => reject(request.error);
+    });
+  } catch {
+    // Usar fallback
+    return fallbackStorage.get(id);
+  }
 };
 
 // Eliminar imagen

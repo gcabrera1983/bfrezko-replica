@@ -12,7 +12,7 @@ export default function EditarProductoPage() {
   const isAuthenticated = useAdmin();
   const router = useRouter();
   const params = useParams();
-  const { products, updateProduct, getProductById } = useProducts();
+  const { products, updateProduct, getProductById, refreshProducts } = useProducts();
   
   const productId = params.id as string;
   const product = getProductById(productId);
@@ -114,7 +114,9 @@ export default function EditarProductoPage() {
       };
 
       await updateProduct(productId, updates);
+      await refreshProducts(); // Forzar recarga de productos
       router.push("/admin");
+      router.refresh(); // Limpiar caché de Next.js
     } catch (error) {
       console.error("Error updating product:", error);
       alert("Error al actualizar el producto. Intenta de nuevo.");
