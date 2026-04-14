@@ -9,6 +9,7 @@ interface ProductImageProps {
   className?: string;
   fill?: boolean;
   priority?: boolean;
+  sizes?: string;
 }
 
 export default function ProductImage({ 
@@ -16,7 +17,8 @@ export default function ProductImage({
   alt, 
   className = "", 
   fill = false,
-  priority = false 
+  priority = false,
+  sizes
 }: ProductImageProps) {
   const [imageSrc, setImageSrc] = useState<string>(src);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,9 +44,13 @@ export default function ProductImage({
     loadImage();
   }, [src]);
 
+  const containerClasses = fill 
+    ? `absolute inset-0 w-full h-full ${className}` 
+    : className;
+
   if (isLoading) {
     return (
-      <div className={`bg-[#F6D3B3]/20 animate-pulse ${className}`}>
+      <div className={`bg-[#F6D3B3]/20 animate-pulse ${containerClasses}`}>
         <div className="w-full h-full flex items-center justify-center">
           <span className="text-[#6B4423]/30 text-xs">Cargando...</span>
         </div>
@@ -56,8 +62,9 @@ export default function ProductImage({
     <img
       src={imageSrc}
       alt={alt}
-      className={className}
+      className={fill ? `absolute inset-0 w-full h-full object-cover ${className}` : className}
       loading={priority ? "eager" : "lazy"}
+      sizes={sizes}
       onError={(e) => {
         // Si la imagen falla, mostrar placeholder
         (e.target as HTMLImageElement).src = "https://via.placeholder.com/600x600/F6D3B3/6B4423?text=Imagen+no+disponible";
