@@ -9,28 +9,52 @@ const API_BASE = '/api'
 const DEMO_MODE = typeof window !== 'undefined' || !process.env.DATABASE_URL
 
 // ======= ORDENES EN LOCALSTORAGE (MODO DEMO) =======
+// Almacenamiento en memoria para el servidor (Vercel)
+let serverOrders: Order[] | null = null
+
 const getDemoOrders = (): Order[] => {
-  if (typeof window === 'undefined') return []
+  if (typeof window === 'undefined') {
+    // En servidor, usar variable en memoria
+    return serverOrders ? [...serverOrders] : []
+  }
+  // En cliente, usar localStorage
   const orders = localStorage.getItem('agape-demo-orders')
   return orders ? JSON.parse(orders) : []
 }
 
 const saveDemoOrders = (orders: Order[]) => {
-  if (typeof window === 'undefined') return
+  if (typeof window === 'undefined') {
+    // En servidor, guardar en variable en memoria
+    serverOrders = [...orders]
+    return
+  }
+  // En cliente, guardar en localStorage
   localStorage.setItem('agape-demo-orders', JSON.stringify(orders))
 }
 
 // ======= PRODUCTOS EN LOCALSTORAGE (MODO DEMO) =======
 const DEMO_PRODUCTS_KEY = 'agape-demo-products'
 
+// Almacenamiento en memoria para el servidor (Vercel)
+let serverProducts: Product[] | null = null
+
 const getDemoProducts = (): Product[] => {
-  if (typeof window === 'undefined') return [...demoProducts]
+  if (typeof window === 'undefined') {
+    // En servidor, usar variable en memoria
+    return serverProducts ? [...serverProducts] : [...demoProducts]
+  }
+  // En cliente, usar localStorage
   const products = localStorage.getItem(DEMO_PRODUCTS_KEY)
   return products ? JSON.parse(products) : [...demoProducts]
 }
 
 const saveDemoProducts = (products: Product[]) => {
-  if (typeof window === 'undefined') return
+  if (typeof window === 'undefined') {
+    // En servidor, guardar en variable en memoria
+    serverProducts = [...products]
+    return
+  }
+  // En cliente, guardar en localStorage
   localStorage.setItem(DEMO_PRODUCTS_KEY, JSON.stringify(products))
 }
 
