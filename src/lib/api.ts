@@ -40,6 +40,16 @@ const saveDemoOrders = (orders: Order[]) => {
 // ======= PRODUCTOS EN LOCALSTORAGE (MODO DEMO) =======
 const DEMO_PRODUCTS_KEY = 'agape-demo-products'
 
+// Limpiar localStorage al cargar para evitar problemas de quota
+if (typeof window !== 'undefined') {
+  try {
+    localStorage.removeItem(DEMO_PRODUCTS_KEY)
+    console.log('[api.ts] localStorage limpiado al inicio')
+  } catch (e) {
+    console.warn('[api.ts] No se pudo limpiar localStorage')
+  }
+}
+
 // Almacenamiento en memoria para el servidor (Vercel)
 let serverProducts: Product[] | null = null
 
@@ -59,8 +69,23 @@ const saveDemoProducts = (products: Product[]) => {
     serverProducts = [...products]
     return
   }
-  // En cliente, guardar en localStorage
-  localStorage.setItem(DEMO_PRODUCTS_KEY, JSON.stringify(products))
+  // En cliente, guardar en localStorage con manejo de error
+  try {
+    localStorage.setItem(DEMO_PRODUCTS_KEY, JSON.stringify(products))
+  } catch (e: any) {
+    if (e.name === 'QuotaExceededError') {
+      console.warn('[saveDemoProducts] localStorage lleno, limpiando...')
+      // Limpiar y reintentar
+      localStorage.clear()
+      try {
+        localStorage.setItem(DEMO_PRODUCTS_KEY, JSON.stringify(products))
+      } catch (e2) {
+        console.error('[saveDemoProducts] No se pudo guardar en localStorage')
+      }
+    } else {
+      throw e
+    }
+  }
 }
 
 // Productos
