@@ -1,14 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+interface RouteParams {
+  params: {
+    id: string
+  }
+}
+
 // GET /api/products/[id] - Obtener producto
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams
 ) {
   try {
+    const { id } = params
+    
     const product = await prisma.product.findUnique({
-      where: { id: params.id }
+      where: { id }
     })
 
     if (!product) {
@@ -31,13 +39,14 @@ export async function GET(
 // PUT /api/products/[id] - Actualizar producto
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams
 ) {
   try {
+    const { id } = params
     const body = await request.json()
 
     const product = await prisma.product.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name: body.name,
         description: body.description,
@@ -68,11 +77,13 @@ export async function PUT(
 // DELETE /api/products/[id] - Eliminar producto
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams
 ) {
   try {
+    const { id } = params
+    
     await prisma.product.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return NextResponse.json({ success: true })
