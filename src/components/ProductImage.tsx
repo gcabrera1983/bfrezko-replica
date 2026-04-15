@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import { getImage, isStoredImage, getStoredImageId } from "@/lib/imageStorage";
 
 interface ProductImageProps {
-  src: string;
-  alt: string;
+  src?: string | null;
+  alt?: string;
   className?: string;
   fill?: boolean;
   priority?: boolean;
@@ -20,7 +20,7 @@ export default function ProductImage({
   priority = false,
   sizes
 }: ProductImageProps) {
-  const [imageSrc, setImageSrc] = useState<string>(src);
+  const [imageSrc, setImageSrc] = useState<string | undefined>(src || undefined);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -60,8 +60,8 @@ export default function ProductImage({
 
   return (
     <img
-      src={imageSrc}
-      alt={alt}
+      src={imageSrc || "https://via.placeholder.com/600x600/F6D3B3/6B4423?text=Imagen+no+disponible"}
+      alt={alt || ""}
       className={fill ? `absolute inset-0 w-full h-full object-cover ${className}` : className}
       loading={priority ? "eager" : "lazy"}
       sizes={sizes}

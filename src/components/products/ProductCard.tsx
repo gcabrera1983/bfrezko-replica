@@ -65,7 +65,7 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
 
           {/* Color dots */}
           <div className="flex items-center gap-1.5 pt-1">
-            {product.colors.slice(0, 4).map((color) => (
+            {(product.colors || []).slice(0, 4).map((color) => (
               <span
                 key={color.value}
                 className="w-3 h-3 rounded-full border border-[#6B4423]/20"
@@ -73,7 +73,7 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
                 title={color.name}
               />
             ))}
-            {product.colors.length > 4 && (
+            {(product.colors || []).length > 4 && (
               <span className="text-xs text-[#6B4423]/60 font-cormorant ml-1">
                 +{product.colors.length - 4}
               </span>

@@ -14,7 +14,7 @@ export default function ImageGallery({ images, productName }: ImageGalleryProps)
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Si no hay imágenes, mostrar placeholder
-  const safeImages = images.length > 0 ? images : [];
+  const safeImages = Array.isArray(images) && images.length > 0 ? images : [];
 
   const nextImage = () => {
     setCurrentIndex((prev) => (prev + 1) % safeImages.length);

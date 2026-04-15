@@ -1,6 +1,7 @@
 // Servicio de API para comunicación con el backend
 import { Product, Order } from '@/types'
 import { products as demoProducts } from '@/data/products'
+import { normalizeProducts, normalizeProduct, normalizeOrders, normalizeOrder } from '@/lib/normalize'
 
 const API_BASE = '/api'
 
@@ -27,13 +28,15 @@ export async function fetchProducts(params?: {
   
   const res = await fetch(`${API_BASE}/products?${queryParams}`)
   if (!res.ok) throw new Error('Error cargando productos')
-  return res.json()
+  const data = await res.json()
+  return normalizeProducts(data)
 }
 
 export async function fetchProduct(id: string): Promise<Product | undefined> {
   const res = await fetch(`${API_BASE}/products/${id}`)
   if (!res.ok) throw new Error('Producto no encontrado')
-  return res.json()
+  const data = await res.json()
+  return normalizeProduct(data)
 }
 
 export async function createProduct(product: Omit<Product, 'id'>): Promise<Product> {
@@ -43,7 +46,8 @@ export async function createProduct(product: Omit<Product, 'id'>): Promise<Produ
     body: JSON.stringify(product)
   })
   if (!res.ok) throw new Error('Error creando producto')
-  return res.json()
+  const data = await res.json()
+  return normalizeProduct(data)
 }
 
 export async function updateProduct(id: string, product: Partial<Product>): Promise<Product> {
@@ -53,7 +57,8 @@ export async function updateProduct(id: string, product: Partial<Product>): Prom
     body: JSON.stringify(product)
   })
   if (!res.ok) throw new Error('Error actualizando producto')
-  return res.json()
+  const data = await res.json()
+  return normalizeProduct(data)
 }
 
 export async function deleteProduct(id: string): Promise<void> {
@@ -67,13 +72,15 @@ export async function deleteProduct(id: string): Promise<void> {
 export async function fetchOrders(): Promise<Order[]> {
   const res = await fetch(`${API_BASE}/orders`)
   if (!res.ok) throw new Error('Error cargando órdenes')
-  return res.json()
+  const data = await res.json()
+  return normalizeOrders(data)
 }
 
 export async function fetchOrder(id: string): Promise<Order | null> {
   const res = await fetch(`${API_BASE}/orders/${id}`)
   if (!res.ok) throw new Error('Orden no encontrada')
-  return res.json()
+  const data = await res.json()
+  return normalizeOrder(data)
 }
 
 export async function createOrder(orderData: {
@@ -99,7 +106,8 @@ export async function createOrder(orderData: {
     body: JSON.stringify(orderData)
   })
   if (!res.ok) throw new Error('Error creando orden')
-  return res.json()
+  const data = await res.json()
+  return normalizeOrder(data)
 }
 
 export async function updateOrder(id: string, updates: Partial<Order>): Promise<Order> {
@@ -109,7 +117,8 @@ export async function updateOrder(id: string, updates: Partial<Order>): Promise<
     body: JSON.stringify(updates)
   })
   if (!res.ok) throw new Error('Error actualizando orden')
-  return res.json()
+  const data = await res.json()
+  return normalizeOrder(data)
 }
 
 export async function deleteOrder(id: string): Promise<void> {

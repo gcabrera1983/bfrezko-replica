@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { products as demoProducts } from '@/data/products'
+import { serializeProducts, serializeProduct } from '@/lib/serialize'
 
 // GET /api/products - Listar productos
 export async function GET(request: NextRequest) {
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
 
       const dbProducts = await prisma.product.findMany({ where, orderBy: { createdAt: 'desc' } })
       if (dbProducts.length > 0) {
-        products = dbProducts
+        products = serializeProducts(dbProducts)
       }
     } catch (dbError) {
       console.log('[API /products] DB no disponible, usando demo products')
@@ -64,7 +65,7 @@ export async function POST(request: NextRequest) {
           isBestseller: body.isBestseller || false
         }
       })
-      return NextResponse.json(product, { status: 201 })
+      return NextResponse.json(serializeProduct(product), { status: 201 })
     } catch (dbError) {
       // Fallback: crear en memoria
       const newProduct = { ...body, id: 'prod-' + Date.now() }

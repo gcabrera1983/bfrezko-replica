@@ -9,7 +9,7 @@ import { ArrowLeft, Plus, X, Loader2 } from "lucide-react";
 import CloudinaryUpload from "@/components/CloudinaryUpload";
 
 export default function EditarProductoPage() {
-  const isAuthenticated = useAdmin();
+  const { isAuthenticated } = useAdmin();
   const router = useRouter();
   const params = useParams();
   const { products, updateProduct, getProductById, refreshProducts } = useProducts();

@@ -171,12 +171,12 @@ export const cleanupOldImages = async (maxAge: number = 30 * 24 * 60 * 60 * 1000
 };
 
 // Verificar si una URL es una imagen en base64 almacenada
-export const isStoredImage = (url: string): boolean => {
-  return url.startsWith('indexeddb://');
+export const isStoredImage = (url: string | undefined | null): boolean => {
+  return typeof url === 'string' && url.startsWith('indexeddb://');
 };
 
 // Obtener ID de imagen almacenada desde URL
-export const getStoredImageId = (url: string): string | null => {
+export const getStoredImageId = (url: string | undefined | null): string | null => {
   if (isStoredImage(url)) {
     return url.replace('indexeddb://', '');
   }

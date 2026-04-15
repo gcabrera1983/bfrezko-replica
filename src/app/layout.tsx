@@ -6,6 +6,7 @@ import { AdminProvider } from "@/context/AdminContext";
 import { ProductsProvider } from "@/context/ProductsContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import GlobalErrorCatcher from "@/components/GlobalErrorCatcher";
 
 const cinzel = Cinzel({
   subsets: ["latin"],
@@ -52,6 +53,7 @@ export default function RootLayout({
             </AdminProvider>
           </CartProvider>
         </ProductsProvider>
+        <GlobalErrorCatcher />
       </body>
     </html>
   );

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { products as demoProducts } from '@/data/products'
+import { serializeProduct } from '@/lib/serialize'
 
 // GET /api/products/[id] - Obtener producto
 export async function GET(
@@ -12,7 +13,7 @@ export async function GET(
     
     try {
       const product = await prisma.product.findUnique({ where: { id } })
-      if (product) return NextResponse.json(product)
+      if (product) return NextResponse.json(serializeProduct(product))
     } catch {
       // fallback
     }
@@ -57,7 +58,7 @@ export async function PUT(
         }
       })
       console.log('[API PUT /products/' + id + '] Producto actualizado en DB:', product.name)
-      return NextResponse.json(product)
+      return NextResponse.json(serializeProduct(product))
     } catch (dbError: any) {
       console.error('[API PUT /products/' + id + '] Error DB:', dbError.message)
       // fallback en memoria

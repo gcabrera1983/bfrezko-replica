@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { serializeOrder } from '@/lib/serialize'
 
 // GET /api/orders/[id] - Obtener orden
 export async function GET(
@@ -14,7 +15,7 @@ export async function GET(
         where: { id },
         include: { items: { include: { product: true } } }
       })
-      if (order) return NextResponse.json(order)
+      if (order) return NextResponse.json(serializeOrder(order))
     } catch {}
     
     return NextResponse.json({ error: 'Orden no encontrada' }, { status: 404 })
@@ -44,7 +45,7 @@ export async function PUT(
         },
         include: { items: { include: { product: true } } }
       })
-      return NextResponse.json(order)
+      return NextResponse.json(serializeOrder(order))
     } catch {
       return NextResponse.json({ ...body, id })
     }

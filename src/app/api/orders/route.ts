@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { serializeOrders, serializeOrder } from '@/lib/serialize'
 
 let fallbackOrders: any[] = []
 
@@ -18,7 +19,7 @@ export async function GET(request: NextRequest) {
         orderBy: { createdAt: 'desc' }
       })
       if (orders.length > 0 || process.env.DATABASE_URL) {
-        return NextResponse.json(orders)
+        return NextResponse.json(serializeOrders(orders))
       }
     } catch {}
 
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
         },
         include: { items: { include: { product: true } } }
       })
-      return NextResponse.json(order, { status: 201 })
+      return NextResponse.json(serializeOrder(order), { status: 201 })
     } catch {
       const order = {
         id: 'ORD-' + Date.now(),

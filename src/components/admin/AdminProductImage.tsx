@@ -3,8 +3,8 @@
 import ProductImage from "@/components/ProductImage";
 
 interface AdminProductImageProps {
-  src: string;
-  alt: string;
+  src?: string | null;
+  alt?: string;
   size?: "small" | "medium" | "large";
 }
 
