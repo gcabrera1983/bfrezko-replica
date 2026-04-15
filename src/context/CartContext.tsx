@@ -2,8 +2,26 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { CartItem, CartContextType } from "@/types";
+import { toNumber } from "@/lib/normalize";
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
+
+function normalizeCartItem(item: any): CartItem {
+  return {
+    product: {
+      ...item.product,
+      price: toNumber(item.product?.price),
+      originalPrice: item.product?.originalPrice != null ? toNumber(item.product.originalPrice) : undefined,
+      images: Array.isArray(item.product?.images) ? item.product.images : [],
+      colors: Array.isArray(item.product?.colors) ? item.product.colors : [],
+      sizes: Array.isArray(item.product?.sizes) ? item.product.sizes : [],
+      tags: Array.isArray(item.product?.tags) ? item.product.tags : [],
+    },
+    quantity: typeof item.quantity === 'number' ? item.quantity : parseInt(item.quantity) || 1,
+    size: item.size || '',
+    color: item.color || '',
+  };
+}
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -17,7 +35,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         if (savedCart) {
           const parsed = JSON.parse(savedCart);
           if (Array.isArray(parsed)) {
-            setItems(parsed);
+            setItems(parsed.map(normalizeCartItem));
           }
         }
       }

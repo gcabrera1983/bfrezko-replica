@@ -24,14 +24,14 @@ function TiendaContent() {
     // Filter by category
     if (selectedCategory && selectedCategory !== "all") {
       result = result.filter(
-        (p) => p.category.toLowerCase().replace(/\s+/g, "-") === selectedCategory.toLowerCase()
+        (p) => (p.category || '').toLowerCase().replace(/\s+/g, "-") === selectedCategory.toLowerCase()
       );
     }
 
     // Filter by tag
     if (tagParam) {
       result = result.filter((p) =>
-        p.tags.some((t) => t.toLowerCase().replace(/\s+/g, "-") === tagParam.toLowerCase())
+        (p.tags || []).some((t) => t.toLowerCase().replace(/\s+/g, "-") === tagParam.toLowerCase())
       );
     }
 
