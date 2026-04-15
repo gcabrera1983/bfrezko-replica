@@ -140,19 +140,25 @@ export default function ProductPage() {
                 Color: <span className="font-cormorant normal-case">{selectedColor || "Selecciona"}</span>
               </h3>
               <div className="flex gap-2">
-                {product.colors?.map((color) => (
-                  <button
-                    key={color.value}
-                    onClick={() => setSelectedColor(color.name)}
-                    className={`w-10 h-10 rounded-full border-2 transition-all ${
-                      selectedColor === color.name
-                        ? "border-[#6B4423] ring-2 ring-[#6B4423] ring-offset-2"
-                        : "border-[#6B4423]/20 hover:border-[#6B4423]/50"
-                    }`}
-                    style={{ backgroundColor: color.value }}
-                    title={color.name}
-                  />
-                ))}
+                {(product.colors || []).map((color, index) => {
+                  const colorName = color?.name || `Color ${index + 1}`;
+                  const colorValue = color?.value || "#cccccc";
+                  return (
+                    <button
+                      key={`${colorValue}-${index}`}
+                      type="button"
+                      onClick={() => setSelectedColor(colorName)}
+                      className={`w-10 h-10 rounded-full border-2 transition-all ${
+                        selectedColor === colorName
+                          ? "border-[#6B4423] ring-2 ring-[#6B4423] ring-offset-2"
+                          : "border-[#6B4423]/20 hover:border-[#6B4423]/50"
+                      }`}
+                      style={{ backgroundColor: colorValue }}
+                      title={colorName}
+                      aria-label={`Seleccionar ${colorName}`}
+                    />
+                  );
+                })}
               </div>
             </div>
 
@@ -160,9 +166,10 @@ export default function ProductPage() {
             <div className="mb-6">
               <h3 className="font-cinzel text-sm uppercase tracking-wider text-[#6B4423] mb-3">Talla</h3>
               <div className="flex flex-wrap gap-2">
-                {product.sizes?.map((size) => (
+                {(product.sizes || []).map((size) => (
                   <button
                     key={size}
+                    type="button"
                     onClick={() => setSelectedSize(size)}
                     className={`w-12 h-12 border-2 font-cinzel transition-all ${
                       selectedSize === size

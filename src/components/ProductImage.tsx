@@ -25,6 +25,7 @@ export default function ProductImage({
 
   useEffect(() => {
     const loadImage = async () => {
+      setIsLoading(true);
       if (isStoredImage(src)) {
         const id = getStoredImageId(src);
         if (id) {
@@ -37,6 +38,8 @@ export default function ProductImage({
             console.error("Error cargando imagen de IndexedDB:", error);
           }
         }
+      } else {
+        setImageSrc(src || undefined);
       }
       setIsLoading(false);
     };
