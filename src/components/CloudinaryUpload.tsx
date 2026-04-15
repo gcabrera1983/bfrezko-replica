@@ -21,20 +21,29 @@ export default function CloudinaryUpload({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const uploadToCloudinary = async (file: File): Promise<string> => {
+    console.log('[CloudinaryUpload] Subiendo:', file.name);
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData,
-    });
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
 
-    if (!response.ok) {
-      throw new Error('Error al subir imagen');
+      console.log('[CloudinaryUpload] Status:', response.status);
+      const data = await response.json().catch(() => ({ error: 'Respuesta inválida' }));
+      console.log('[CloudinaryUpload] Response:', data);
+
+      if (!response.ok) {
+        throw new Error(data.error || `Error ${response.status}`);
+      }
+
+      return data.url;
+    } catch (err: any) {
+      console.error('[CloudinaryUpload] Error:', err);
+      throw err;
     }
-
-    const data = await response.json();
-    return data.url;
   };
 
   const handleFileChange = useCallback(async (files: FileList | null) => {
@@ -65,10 +74,11 @@ export default function CloudinaryUpload({
 
       try {
         const url = await uploadToCloudinary(file);
+        console.log('[CloudinaryUpload] URL:', url);
         onChange([...images, url]);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error uploading:', error);
-        alert(`Error al subir "${file.name}"`);
+        alert(`Error al subir "${file.name}": ${error.message}`);
       } finally {
         setUploading(null);
       }

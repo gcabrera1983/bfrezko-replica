@@ -10,6 +10,10 @@ cloudinary.config({
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('[API Upload] Cloud name:', process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME)
+    console.log('[API Upload] API Key exists:', !!process.env.CLOUDINARY_API_KEY)
+    console.log('[API Upload] API Secret exists:', !!process.env.CLOUDINARY_API_SECRET)
+
     const formData = await request.formData()
     const file = formData.get('file') as File
 
@@ -20,11 +24,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    console.log('[API Upload] Archivo recibido:', file.name, file.type, file.size)
+
+    // Verificar configuración
+    if (!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+      return NextResponse.json(
+        { error: 'Cloudinary no configurado. Faltan variables de entorno.' },
+        { status: 500 }
+      )
+    }
+
     // Convertir archivo a base64
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
     const base64 = buffer.toString('base64')
     const dataURI = `data:${file.type};base64,${base64}`
+
+    console.log('[API Upload] Subiendo a Cloudinary...')
 
     // Subir a Cloudinary
     const result = await cloudinary.uploader.upload(dataURI, {
@@ -32,14 +48,16 @@ export async function POST(request: NextRequest) {
       resource_type: 'auto',
     })
 
+    console.log('[API Upload] Éxito:', result.secure_url)
+
     return NextResponse.json({
       url: result.secure_url,
       public_id: result.public_id,
     })
-  } catch (error) {
-    console.error('Error uploading to Cloudinary:', error)
+  } catch (error: any) {
+    console.error('[API Upload] Error:', error.message || error)
     return NextResponse.json(
-      { error: 'Error al subir imagen' },
+      { error: error.message || 'Error al subir imagen' },
       { status: 500 }
     )
   }
