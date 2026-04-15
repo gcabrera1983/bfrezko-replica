@@ -5,8 +5,10 @@ import { products as demoProducts } from '@/data/products'
 const API_BASE = '/api'
 
 // Detectar si estamos en modo demo o producción
-// En producción usamos DATABASE_URL
-const DEMO_MODE = !process.env.DATABASE_URL
+// En el cliente (navegador), SIEMPRE usamos API routes
+// En el servidor, usamos demo solo si no hay DATABASE_URL
+const isClient = typeof window !== 'undefined'
+const DEMO_MODE = !isClient && !process.env.DATABASE_URL
 
 // ======= MODO PRODUCCIÓN CON BASE DE DATOS =======
 
