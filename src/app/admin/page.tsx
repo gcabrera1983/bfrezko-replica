@@ -44,24 +44,6 @@ export default function AdminDashboard() {
     );
   }
 
-  // Banner de modo demo
-  const DemoBanner = () => (
-    <div className="bg-amber-50 border-l-4 border-amber-400 p-4 mb-6">
-      <div className="flex">
-        <div className="flex-shrink-0">
-          <span className="text-amber-400">⚠️</span>
-        </div>
-        <div className="ml-3">
-          <p className="text-sm text-amber-700 font-cormorant">
-            <strong className="font-cinzel">Modo Demo:</strong> Los cambios se guardan localmente en este dispositivo/navegador. 
-            Para sincronizar entre dispositivos, necesitas conectar una base de datos (Supabase). 
-            <Link href="/admin/configuracion" className="underline ml-1">Ver configuración</Link>
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-
   const stats = [
     { label: "Productos", value: products.length, icon: Package, color: "bg-[#6B4423]" },
     { label: "Órdenes", value: orders.length, icon: ShoppingBag, color: "bg-[#889E81]" },
@@ -115,10 +97,7 @@ export default function AdminDashboard() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Banner modo demo */}
-        <DemoBanner />
-        
-        {/* Stats /*}
+        {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {stats.map((stat) => (
             <div key={stat.label} className="bg-white p-6 rounded-lg border border-[#6B4423]/10">
