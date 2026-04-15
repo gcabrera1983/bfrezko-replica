@@ -1,9 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { products as demoProducts } from '@/data/products'
 
 // GET /api/products - Listar productos
 export async function GET(request: NextRequest) {
   try {
+    // Verificar si hay base de datos configurada
+    const hasDatabase = !!process.env.DATABASE_URL
+    
+    if (!hasDatabase) {
+      console.log('[API /products] No DATABASE_URL, usando productos demo')
+      return NextResponse.json(demoProducts)
+    }
+
     const { searchParams } = new URL(request.url)
     const category = searchParams.get('category')
     const isNew = searchParams.get('isNew') === 'true'
@@ -33,20 +42,28 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' }
     })
 
+    console.log('[API /products] Productos desde DB:', products.length)
     return NextResponse.json(products)
   } catch (error) {
     console.error('Error fetching products:', error)
-    return NextResponse.json(
-      { error: 'Error al cargar productos' },
-      { status: 500 }
-    )
+    // Fallback a productos demo si la base de datos falla
+    return NextResponse.json(demoProducts)
   }
 }
 
 // POST /api/products - Crear producto
 export async function POST(request: NextRequest) {
   try {
+    const hasDatabase = !!process.env.DATABASE_URL
     const body = await request.json()
+    
+    if (!hasDatabase) {
+      const newProduct = {
+        ...body,
+        id: 'prod-' + Date.now()
+      }
+      return NextResponse.json(newProduct, { status: 201 })
+    }
     
     const product = await prisma.product.create({
       data: {
