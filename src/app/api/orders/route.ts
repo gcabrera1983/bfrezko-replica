@@ -1,33 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+
+// Almacenamiento en memoria para órdenes
+let orders: any[] = []
 
 // GET /api/orders - Listar órdenes
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const status = searchParams.get('status')
     const email = searchParams.get('email')
 
-    const where: any = {}
-
-    if (status) {
-      where.status = status
-    }
     if (email) {
-      where.customerEmail = email
+      return NextResponse.json(orders.filter(o => o.customerEmail === email))
     }
-
-    const orders = await prisma.order.findMany({
-      where,
-      include: {
-        items: {
-          include: {
-            product: true
-          }
-        }
-      },
-      orderBy: { createdAt: 'desc' }
-    })
 
     return NextResponse.json(orders)
   } catch (error) {
@@ -44,36 +28,37 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
 
-    const order = await prisma.order.create({
-      data: {
-        total: body.total,
-        shippingCost: body.shippingCost || 0,
-        customerEmail: body.customer.email,
-        customerName: `${body.customer.firstName} ${body.customer.lastName}`,
-        customerPhone: body.customer.phone,
-        address: body.shipping.address,
-        city: body.shipping.city,
-        department: body.shipping.department,
-        postalCode: body.shipping.postalCode,
-        items: {
-          create: body.items.map((item: any) => ({
-            quantity: item.quantity,
-            price: item.price,
-            size: item.size,
-            color: item.color,
-            productId: item.productId
-          }))
+    const order = {
+      id: 'ORD-' + Date.now(),
+      status: 'PENDING',
+      total: body.total,
+      shippingCost: body.shippingCost || 0,
+      customerEmail: body.customer.email,
+      customerName: `${body.customer.firstName} ${body.customer.lastName}`,
+      customerPhone: body.customer.phone,
+      address: body.shipping.address,
+      city: body.shipping.city,
+      department: body.shipping.department,
+      postalCode: body.shipping.postalCode,
+      paymentStatus: 'PENDING',
+      items: body.items.map((item: any, i: number) => ({
+        id: `item-${i}`,
+        quantity: item.quantity,
+        price: item.price,
+        size: item.size,
+        color: item.color,
+        productId: item.productId,
+        product: {
+          id: item.productId,
+          name: item.name,
+          image: item.image || ''
         }
-      },
-      include: {
-        items: {
-          include: {
-            product: true
-          }
-        }
-      }
-    })
+      })),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
 
+    orders.unshift(order)
     return NextResponse.json(order, { status: 201 })
   } catch (error) {
     console.error('Error creating order:', error)

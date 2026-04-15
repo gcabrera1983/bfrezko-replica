@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { products as demoProducts } from '@/data/products'
 
 // GET /api/products - Listar productos
 export async function GET(request: NextRequest) {
@@ -10,31 +10,26 @@ export async function GET(request: NextRequest) {
     const isBestseller = searchParams.get('isBestseller') === 'true'
     const search = searchParams.get('search')
 
-    const where: any = {}
+    let filtered = [...demoProducts]
 
     if (category && category !== 'all') {
-      where.category = category
+      filtered = filtered.filter(p => p.category === category)
     }
     if (isNew) {
-      where.isNew = true
+      filtered = filtered.filter(p => p.isNew)
     }
     if (isBestseller) {
-      where.isBestseller = true
+      filtered = filtered.filter(p => p.isBestseller)
     }
     if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-        { tags: { has: search } }
-      ]
+      const searchLower = search.toLowerCase()
+      filtered = filtered.filter(p => 
+        p.name.toLowerCase().includes(searchLower) ||
+        p.description.toLowerCase().includes(searchLower)
+      )
     }
 
-    const products = await prisma.product.findMany({
-      where,
-      orderBy: { createdAt: 'desc' }
-    })
-
-    return NextResponse.json(products)
+    return NextResponse.json(filtered)
   } catch (error) {
     console.error('Error fetching products:', error)
     return NextResponse.json(
@@ -49,25 +44,13 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     
-    const product = await prisma.product.create({
-      data: {
-        name: body.name,
-        description: body.description,
-        price: body.price,
-        originalPrice: body.originalPrice || null,
-        image: body.image,
-        images: body.images || [body.image],
-        category: body.category,
-        tags: body.tags || [],
-        sizes: body.sizes || [],
-        colors: body.colors || [],
-        inStock: body.inStock ?? true,
-        isNew: body.isNew || false,
-        isBestseller: body.isBestseller || false
-      }
-    })
+    // Crear producto con ID único
+    const newProduct = {
+      ...body,
+      id: 'prod-' + Date.now()
+    }
 
-    return NextResponse.json(product, { status: 201 })
+    return NextResponse.json(newProduct, { status: 201 })
   } catch (error) {
     console.error('Error creating product:', error)
     return NextResponse.json(
