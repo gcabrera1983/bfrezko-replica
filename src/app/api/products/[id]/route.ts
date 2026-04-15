@@ -34,6 +34,8 @@ export async function PUT(
   try {
     const id = params.id as string
     const body = await request.json()
+    
+    console.log('[API PUT /products/' + id + '] Body recibido:', JSON.stringify(body, null, 2))
 
     try {
       const product = await prisma.product.update({
@@ -54,8 +56,10 @@ export async function PUT(
           isBestseller: body.isBestseller
         }
       })
+      console.log('[API PUT /products/' + id + '] Producto actualizado en DB:', product.name)
       return NextResponse.json(product)
-    } catch {
+    } catch (dbError: any) {
+      console.error('[API PUT /products/' + id + '] Error DB:', dbError.message)
       // fallback en memoria
       const demoProduct = demoProducts.find(p => p.id === id)
       if (demoProduct) {
@@ -64,7 +68,8 @@ export async function PUT(
       }
       return NextResponse.json({ ...body, id }, { status: 200 })
     }
-  } catch (error) {
+  } catch (error: any) {
+    console.error('[API PUT /products/' + id + '] Error general:', error.message)
     return NextResponse.json({ error: 'Error al actualizar producto' }, { status: 500 })
   }
 }

@@ -13,18 +13,18 @@ model Product {
   name          String
   description   String
   price         Decimal   @db.Decimal(10, 2)
-  originalPrice Decimal?  @db.Decimal(10, 2)
+  originalPrice Decimal?  @db.Decimal(10, 2) @map("original_price")
   image         String
   images        String[]
   category      String
   tags          String[]
   sizes         String[]
   colors        Json
-  inStock       Boolean   @default(true)
-  isNew         Boolean   @default(false)
-  isBestseller  Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  inStock       Boolean   @default(true) @map("in_stock")
+  isNew         Boolean   @default(false) @map("is_new")
+  isBestseller  Boolean   @default(false) @map("is_bestseller")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
   
   orderItems    OrderItem[]
   
@@ -35,34 +35,34 @@ model Order {
   id            String      @id @default(cuid())
   status        OrderStatus @default(PENDING)
   total         Decimal     @db.Decimal(10, 2)
-  shippingCost  Decimal     @default(0) @db.Decimal(10, 2)
+  shippingCost  Decimal     @default(0) @db.Decimal(10, 2) @map("shipping_cost")
   
-  customerEmail String
-  customerName  String
-  customerPhone String
+  customerEmail String @map("customer_email")
+  customerName  String @map("customer_name")
+  customerPhone String @map("customer_phone")
   
   address       String
   city          String
   department    String
-  postalCode    String
+  postalCode    String @map("postal_code")
   
   // Información de envío
-  trackingNumber String?    // Número de guía de envío
-  carrier        String?    // Transportista (Mensajeria, Cargo Expreso, etc.)
-  shippedAt      DateTime?  // Fecha de envío
-  deliveredAt    DateTime?  // Fecha de entrega
+  trackingNumber String? @map("tracking_number")
+  carrier        String?
+  shippedAt      DateTime? @map("shipped_at")
+  deliveredAt    DateTime? @map("delivered_at")
   
   // Información de pago
-  paymentId     String?
-  paymentStatus PaymentStatus @default(PENDING)
-  paidAt        DateTime?
+  paymentId     String? @map("payment_id")
+  paymentStatus PaymentStatus @default(PENDING) @map("payment_status")
+  paidAt        DateTime? @map("paid_at")
   
   // Relaciones
   items         OrderItem[]
   trackingHistory OrderTracking[]
   
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
   
   @@map("orders")
 }
@@ -74,10 +74,10 @@ model OrderItem {
   size      String
   color     String
   
-  orderId   String
+  orderId   String @map("order_id")
   order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   
-  productId String
+  productId String @map("product_id")
   product   Product @relation(fields: [productId], references: [id])
   
   @@map("order_items")
@@ -87,14 +87,14 @@ model OrderItem {
 model OrderTracking {
   id          String    @id @default(cuid())
   status      OrderStatus
-  description String?   // Descripción del evento
-  location    String?   // Ubicación (ciudad, centro de distribución)
+  description String?
+  location    String?
   
-  orderId     String
+  orderId     String @map("order_id")
   order       Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
   
-  createdBy   String?   // ID del admin que actualizó
-  createdAt   DateTime  @default(now())
+  createdBy   String? @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
   
   @@map("order_tracking")
   @@index([orderId])
@@ -127,9 +127,9 @@ model Admin {
   email     String   @unique
   password  String
   name      String
-  isActive  Boolean  @default(true)
-  lastLogin DateTime?
-  createdAt DateTime @default(now())
+  isActive  Boolean  @default(true) @map("is_active")
+  lastLogin DateTime? @map("last_login")
+  createdAt DateTime @default(now()) @map("created_at")
   
   @@map("admins")
 }
