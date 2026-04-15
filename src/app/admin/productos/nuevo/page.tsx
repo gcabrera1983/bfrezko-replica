@@ -6,7 +6,7 @@ import { useAdmin } from "@/context/AdminContext";
 import { useProducts } from "@/context/ProductsContext";
 import Link from "next/link";
 import { ArrowLeft, Plus, X, Loader2 } from "lucide-react";
-import MultiImageUpload from "@/components/MultiImageUpload";
+import CloudinaryUpload from "@/components/CloudinaryUpload";
 
 export default function NuevoProductoPage() {
   const isAuthenticated = useAdmin();
@@ -138,7 +138,7 @@ export default function NuevoProductoPage() {
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Imágenes */}
           <div className="bg-white p-6 rounded-lg border border-[#6B4423]/10">
-            <MultiImageUpload
+            <CloudinaryUpload
               images={formData.images}
               onChange={updateImages}
               maxImages={5}
