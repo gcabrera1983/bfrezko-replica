@@ -44,6 +44,10 @@ export function serializeOrder(order: any): any {
     deliveredAt: order.deliveredAt instanceof Date ? order.deliveredAt.toISOString() : order.deliveredAt,
     paidAt: order.paidAt instanceof Date ? order.paidAt.toISOString() : order.paidAt,
     items: Array.isArray(order.items) ? order.items.map(serializeOrderItem) : order.items,
+    trackingHistory: Array.isArray(order.trackingHistory) ? order.trackingHistory.map((t: any) => ({
+      ...t,
+      createdAt: t.createdAt instanceof Date ? t.createdAt.toISOString() : t.createdAt,
+    })) : order.trackingHistory,
   };
 }
 

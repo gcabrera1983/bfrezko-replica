@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Truck, Save, Loader2, Package, CheckCircle } from 'lucide-react'
+import { ArrowLeft, Truck, Save, Loader2, Package, CheckCircle, Send } from 'lucide-react'
 import { useAdmin } from '@/context/AdminContext'
 import { formatPrice } from '@/lib/utils'
 import OrderTimeline from '@/components/OrderTimeline'
@@ -42,54 +42,12 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
       router.push('/admin/login')
       return
     }
-    loadOrder()
+    fetchOrderFromAPI()
   }, [isAuthenticated, params.id])
-
-  const loadOrder = () => {
-    try {
-      // En modo demo, buscar en localStorage
-      const pendingOrder = localStorage.getItem('pendingOrder')
-      
-      if (pendingOrder) {
-        const parsedOrder = JSON.parse(pendingOrder)
-        // Verificar si el ID coincide
-        if (parsedOrder.id === params.id || parsedOrder.id.includes(params.id)) {
-          // Crear orden completa con datos de demo
-          const fullOrder = {
-            ...parsedOrder,
-            status: parsedOrder.status || 'PENDING',
-            trackingNumber: parsedOrder.trackingNumber || '',
-            carrier: parsedOrder.carrier || '',
-            trackingHistory: parsedOrder.trackingHistory || [
-              {
-                id: '1',
-                status: 'PENDING',
-                description: 'Orden recibida - Pago contra entrega',
-                location: 'Tienda Online',
-                createdAt: parsedOrder.createdAt || new Date().toISOString()
-              }
-            ]
-          }
-          
-          setOrder(fullOrder)
-          setStatus(fullOrder.status)
-          setTrackingNumber(fullOrder.trackingNumber || '')
-          setCarrier(fullOrder.carrier || '')
-          setLoading(false)
-          return
-        }
-      }
-      
-      // Si no está en localStorage, intentar con la API
-      fetchOrderFromAPI()
-    } catch (error) {
-      console.error('Error loading order:', error)
-      fetchOrderFromAPI()
-    }
-  }
 
   const fetchOrderFromAPI = async () => {
     try {
+      setLoading(true)
       const response = await fetch(`/api/orders/${params.id}`)
       if (!response.ok) throw new Error('Orden no encontrada')
       
@@ -100,35 +58,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
       setCarrier(data.carrier || '')
     } catch (error) {
       console.error('Error loading order:', error)
-      // Crear orden de ejemplo si no existe
-      const demoOrder = {
-        id: params.id,
-        status: 'PENDING',
-        total: 185,
-        shippingCost: 20,
-        customerEmail: 'cliente@ejemplo.com',
-        customerName: 'Cliente Demo',
-        customerPhone: '+502 1234 5678',
-        address: 'Calle Principal 123',
-        city: 'Guatemala',
-        department: 'Guatemala',
-        postalCode: '01001',
-        trackingNumber: '',
-        carrier: '',
-        items: [],
-        trackingHistory: [
-          {
-            id: '1',
-            status: 'PENDING',
-            description: 'Orden recibida',
-            location: 'Tienda Online',
-            createdAt: new Date().toISOString()
-          }
-        ],
-        createdAt: new Date().toISOString()
-      }
-      setOrder(demoOrder)
-      setStatus(demoOrder.status)
+      alert('Error cargando la orden')
     } finally {
       setLoading(false)
     }
@@ -139,56 +69,42 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
     setSaving(true)
 
     try {
-      const updatedOrder = {
-        ...order,
-        status,
-        trackingNumber,
-        carrier,
-        updatedAt: new Date().toISOString()
-      }
-
-      // Agregar al historial si hay nota
-      if (note) {
-        if (!updatedOrder.trackingHistory) {
-          updatedOrder.trackingHistory = []
-        }
-        updatedOrder.trackingHistory.push({
-          id: 'track-' + Date.now(),
+      const response = await fetch(`/api/orders/${params.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           status,
-          description: note,
-          location: location || 'Bodega Ágape',
-          createdAt: new Date().toISOString()
+          trackingNumber: trackingNumber || null,
+          carrier: carrier || null,
+          note: note || null,
+          location: location || null
         })
-      }
+      })
 
-      // Guardar en localStorage
-      localStorage.setItem('pendingOrder', JSON.stringify(updatedOrder))
+      if (!response.ok) throw new Error('Error guardando en la base de datos')
 
-      // Intentar actualizar en API también
-      try {
-        await fetch(`/api/orders/${params.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            status,
-            trackingNumber: trackingNumber || null,
-            carrier: carrier || null,
-            note: note || null,
-            location: location || null
-          })
-        })
-      } catch (e) {
-        // Ignorar error de API en modo demo
-      }
-
-      setOrder(updatedOrder)
+      const updated = await response.json()
+      setOrder(updated)
       setNote('')
       setLocation('')
       alert('Orden actualizada correctamente')
-    } catch (error) {
-      alert('Error al actualizar la orden')
+    } catch (error: any) {
+      alert(error.message || 'Error al actualizar la orden')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleSendUpdateEmail = async () => {
+    try {
+      const response = await fetch(`/api/orders/${params.id}/notify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+      if (!response.ok) throw new Error('Error enviando email')
+      alert('Notificación enviada al cliente')
+    } catch (error: any) {
+      alert(error.message || 'Error al enviar notificación')
     }
   }
 
@@ -281,18 +197,18 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
                 </div>
                 <div className="flex justify-between font-cormorant">
                   <span className="text-[#6B4423]/60">Envío</span>
-                  <span>{order.shippingCost === 0 ? 'Gratis' : formatPrice(order.shippingCost || 20)}</span>
+                  <span>{order.shippingCost === 0 ? 'Gratis' : formatPrice(order.shippingCost || 0)}</span>
                 </div>
                 <div className="flex justify-between font-cinzel text-lg mt-2 pt-2 border-t border-[#6B4423]/10">
                   <span className="text-[#6B4423]">Total</span>
-                  <span>{formatPrice((order.total || 0) + (order.shippingCost || 20))}</span>
+                  <span>{formatPrice((order.total || 0) + (order.shippingCost || 0))}</span>
                 </div>
               </div>
             </div>
 
             {/* Timeline */}
             <div className="bg-white rounded-lg border border-[#6B4423]/10 p-6">
-              <h2 className="font-cinzel text-lg text-[#6B4423] mb-4">Historial</h2>
+              <h2 className="font-cinzel text-lg text-[#6B4423] mb-4">Historial de Tracking</h2>
               <OrderTimeline history={order.trackingHistory || []} currentStatus={order.status} />
             </div>
           </div>
@@ -342,6 +258,14 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
 
                 <button type="submit" disabled={saving} className="w-full py-3 bg-[#6B4423] text-[#F6D3B3] font-cinzel uppercase hover:bg-[#6B4423]/90 disabled:opacity-50 flex items-center justify-center gap-2">
                   {saving ? <><Loader2 className="w-5 h-5 animate-spin" /> Guardando...</> : <><Save className="w-5 h-5" /> Guardar Cambios</>}
+                </button>
+
+                <button 
+                  type="button"
+                  onClick={handleSendUpdateEmail}
+                  className="w-full py-3 border-2 border-[#6B4423] text-[#6B4423] font-cinzel uppercase hover:bg-[#6B4423]/5 flex items-center justify-center gap-2"
+                >
+                  <Send className="w-5 h-5" /> Reenviar notificación al cliente
                 </button>
               </form>
             </div>

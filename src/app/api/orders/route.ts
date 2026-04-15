@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { serializeOrders, serializeOrder } from '@/lib/serialize'
+import { sendOrderConfirmationEmail, sendNewOrderAdminEmail } from '@/lib/email'
 
 let fallbackOrders: any[] = []
 
@@ -56,11 +57,27 @@ export async function POST(request: NextRequest) {
               color: item.color,
               productId: item.productId
             }))
+          },
+          trackingHistory: {
+            create: {
+              status: 'PENDING',
+              description: 'Orden recibida - Pago contra entrega',
+              location: 'Tienda Online',
+              createdBy: 'system'
+            }
           }
         },
-        include: { items: { include: { product: true } } }
+        include: { items: { include: { product: true } }, trackingHistory: true }
       })
-      return NextResponse.json(serializeOrder(order), { status: 201 })
+
+      // Enviar emails en paralelo
+      const orderWithItems = serializeOrder(order);
+      Promise.all([
+        sendOrderConfirmationEmail(orderWithItems),
+        sendNewOrderAdminEmail(orderWithItems)
+      ]).catch(err => console.error('[API Orders] Error enviando emails:', err));
+
+      return NextResponse.json(orderWithItems, { status: 201 })
     } catch {
       const order = {
         id: 'ORD-' + Date.now(),

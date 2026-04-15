@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Search, Package, Truck, CheckCircle, MapPin, ArrowLeft, Loader2, AlertCircle } from 'lucide-react'
 import { formatPrice } from '@/lib/utils'
 import OrderTimeline from '@/components/OrderTimeline'
 
-export default function TrackingPage() {
+function TrackingContent() {
   const searchParams = useSearchParams()
   const initialOrderId = searchParams.get('orden') || ''
   
@@ -32,79 +32,38 @@ export default function TrackingPage() {
     try {
       const cleanId = id.replace('#', '').trim()
       
-      // En modo demo, buscar en localStorage
-      const pendingOrder = localStorage.getItem('pendingOrder')
+      const response = await fetch(`/api/orders/${cleanId}`)
       
-      if (pendingOrder) {
-        const parsedOrder = JSON.parse(pendingOrder)
-        // Verificar si el ID coincide
-        if (parsedOrder.id === cleanId || parsedOrder.id.includes(cleanId)) {
-          // Crear datos de demo para mostrar
-          const demoOrder = {
-            ...parsedOrder,
-            status: 'SHIPPED',
-            trackingNumber: 'GT-' + Math.floor(Math.random() * 1000000),
-            carrier: 'Cargo Expreso',
-            shippedAt: new Date(Date.now() - 86400000).toISOString(),
-            paymentStatus: 'PENDING',
-            items: parsedOrder.items || [],
-            trackingHistory: [
-              {
-                id: '1',
-                status: 'PENDING',
-                description: 'Orden recibida',
-                location: 'Tienda Online',
-                createdAt: new Date(Date.now() - 259200000).toISOString()
-              },
-              {
-                id: '2',
-                status: 'PROCESSING',
-                description: 'Pedido en preparación',
-                location: 'Bodega Ágape',
-                createdAt: new Date(Date.now() - 172800000).toISOString()
-              },
-              {
-                id: '3',
-                status: 'SHIPPED',
-                description: 'Enviado vía Cargo Expreso',
-                location: 'Centro de Distribución',
-                createdAt: new Date(Date.now() - 86400000).toISOString()
-              }
-            ]
-          }
-          
-          // Verificar email si se proporcionó
-          if (email && demoOrder.customer?.email !== email) {
-            setError('El correo no coincide con la orden')
-            setLoading(false)
-            return
-          }
-          
-          setOrder(demoOrder)
-          setLoading(false)
-          return
+      if (!response.ok) {
+        if (response.status === 404) {
+          setError('Orden no encontrada. Verifica el número de orden.')
+        } else {
+          setError('Error buscando la orden. Intenta de nuevo.')
         }
+        setLoading(false)
+        return
       }
       
-      // Si no está en localStorage, intentar con la API
-      try {
-        const response = await fetch(`/api/orders/${cleanId}`)
-        if (response.ok) {
-          const data = await response.json()
-          if (email && data.customerEmail !== email) {
-            setError('El correo no coincide con la orden')
-            setLoading(false)
-            return
-          }
-          setOrder(data)
-          setLoading(false)
-          return
-        }
-      } catch (e) {
-        // API falló, continuar con error
+      const data = await response.json()
+      
+      if (email && data.customerEmail !== email) {
+        setError('El correo no coincide con la orden')
+        setLoading(false)
+        return
       }
       
-      setError('Orden no encontrada. Verifica el número de orden.')
+      // Asegurar trackingHistory mínimo
+      if (!data.trackingHistory || data.trackingHistory.length === 0) {
+        data.trackingHistory = [{
+          id: '1',
+          status: data.status || 'PENDING',
+          description: 'Orden recibida',
+          location: 'Tienda Online',
+          createdAt: data.createdAt
+        }]
+      }
+      
+      setOrder(data)
     } catch (err: any) {
       setError(err.message || 'Error buscando la orden')
     } finally {
@@ -296,7 +255,7 @@ export default function TrackingPage() {
         )}
 
         {/* Ayuda */}
-        {!order && (
+        {!order && !loading && (
           <div className="bg-[#F6D3B3]/20 rounded-lg p-6 text-center">
             <Truck className="w-12 h-12 text-[#6B4423]/40 mx-auto mb-4" />
             <h3 className="font-cinzel text-lg text-[#6B4423] mb-2">¿Necesitas ayuda?</h3>
@@ -345,5 +304,17 @@ function StatusBadge({ status }: { status: string }) {
     <span className={`px-4 py-2 rounded-full text-sm font-cinzel ${styles[status] || 'bg-gray-100 text-gray-800'}`}>
       {labels[status] || status}
     </span>
+  )
+}
+
+export default function TrackingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#FDF9F3] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-[#6B4423] animate-spin" />
+      </div>
+    }>
+      <TrackingContent />
+    </Suspense>
   )
 }

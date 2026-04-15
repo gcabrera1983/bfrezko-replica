@@ -42,6 +42,10 @@ export function normalizeOrder(order: any): any {
     total: toNumber(order.total),
     shippingCost: toNumber(order.shippingCost),
     items: Array.isArray(order.items) ? order.items.map(normalizeOrderItem) : order.items,
+    trackingHistory: Array.isArray(order.trackingHistory) ? order.trackingHistory.map((t: any) => ({
+      ...t,
+      createdAt: t.createdAt || new Date().toISOString(),
+    })) : (order.trackingHistory || []),
   };
 }
 

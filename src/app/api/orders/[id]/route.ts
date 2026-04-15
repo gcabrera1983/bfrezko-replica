@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { serializeOrder } from '@/lib/serialize'
+import { sendOrderStatusUpdateEmail } from '@/lib/email'
 
 // GET /api/orders/[id] - Obtener orden
 export async function GET(
@@ -13,7 +14,7 @@ export async function GET(
     try {
       const order = await prisma.order.findUnique({
         where: { id },
-        include: { items: { include: { product: true } } }
+        include: { items: { include: { product: true } }, trackingHistory: { orderBy: { createdAt: 'asc' } } }
       })
       if (order) return NextResponse.json(serializeOrder(order))
     } catch {}
@@ -34,20 +35,59 @@ export async function PUT(
     const body = await request.json()
 
     try {
+      // Actualizar orden
+      const data: any = {
+        status: body.status,
+        trackingNumber: body.trackingNumber,
+        carrier: body.carrier,
+      }
+
+      // Auto-set shippedAt / deliveredAt basado en status
+      if (body.status === 'SHIPPED' && !body.shippedAt) {
+        data.shippedAt = new Date()
+      }
+      if (body.status === 'DELIVERED' && !body.deliveredAt) {
+        data.deliveredAt = new Date()
+      }
+      if (body.shippedAt) data.shippedAt = new Date(body.shippedAt)
+      if (body.deliveredAt) data.deliveredAt = new Date(body.deliveredAt)
+
       const order = await prisma.order.update({
         where: { id },
-        data: {
-          status: body.status,
-          trackingNumber: body.trackingNumber,
-          carrier: body.carrier,
-          shippedAt: body.shippedAt ? new Date(body.shippedAt) : undefined,
-          deliveredAt: body.deliveredAt ? new Date(body.deliveredAt) : undefined
-        },
-        include: { items: { include: { product: true } } }
+        data,
+        include: { items: { include: { product: true } }, trackingHistory: { orderBy: { createdAt: 'asc' } } }
       })
-      return NextResponse.json(serializeOrder(order))
-    } catch {
-      return NextResponse.json({ ...body, id })
+
+      // Si hay nota, crear entrada en historial de tracking
+      if (body.note) {
+        await prisma.orderTracking.create({
+          data: {
+            orderId: id,
+            status: body.status,
+            description: body.note,
+            location: body.location || 'Bodega Ágape',
+            createdBy: 'admin'
+          }
+        })
+      }
+
+      // Recargar orden con tracking actualizado
+      const updatedOrder = await prisma.order.findUnique({
+        where: { id },
+        include: { items: { include: { product: true } }, trackingHistory: { orderBy: { createdAt: 'asc' } } }
+      })
+
+      const serialized = serializeOrder(updatedOrder!)
+
+      // Enviar email de actualización al cliente (no bloqueante)
+      sendOrderStatusUpdateEmail(serialized, body.note).catch(err => {
+        console.error('[API Orders] Error enviando email de actualización:', err)
+      })
+
+      return NextResponse.json(serialized)
+    } catch (err: any) {
+      console.error('[API PUT /orders/' + id + '] Error:', err.message)
+      return NextResponse.json({ error: 'Error al actualizar orden en base de datos' }, { status: 500 })
     }
   } catch (error) {
     return NextResponse.json({ error: 'Error al actualizar orden' }, { status: 500 })
