@@ -1,19 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-interface RouteParams {
-  params: {
-    id: string
-  }
-}
-
 // GET /api/orders/[id] - Obtener orden
 export async function GET(
   request: NextRequest,
-  { params }: RouteParams
+  { params }: any
 ) {
   try {
-    const { id } = params
+    const id = params.id as string
     
     const order = await prisma.order.findUnique({
       where: { id },
@@ -46,10 +40,10 @@ export async function GET(
 // PUT /api/orders/[id] - Actualizar orden
 export async function PUT(
   request: NextRequest,
-  { params }: RouteParams
+  { params }: any
 ) {
   try {
-    const { id } = params
+    const id = params.id as string
     const body = await request.json()
 
     const order = await prisma.order.update({
@@ -83,10 +77,10 @@ export async function PUT(
 // DELETE /api/orders/[id] - Eliminar orden
 export async function DELETE(
   request: NextRequest,
-  { params }: RouteParams
+  { params }: any
 ) {
   try {
-    const { id } = params
+    const id = params.id as string
     
     await prisma.order.delete({
       where: { id }
