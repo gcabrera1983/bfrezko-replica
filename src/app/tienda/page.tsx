@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useProducts } from "@/context/ProductsContext";
 import { categories } from "@/data/products";
 import ProductGrid from "@/components/products/ProductGrid";
-import { SlidersHorizontal, X } from "lucide-react";
+import { SlidersHorizontal, X, Search } from "lucide-react";
 
 function TiendaContent() {
   const searchParams = useSearchParams();
@@ -17,6 +17,7 @@ function TiendaContent() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 500]);
   const [sortBy, setSortBy] = useState("featured");
   const [showFilters, setShowFilters] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const filteredProducts = useMemo(() => {
     let result = [...products];
@@ -32,6 +33,17 @@ function TiendaContent() {
     if (tagParam) {
       result = result.filter((p) =>
         (p.tags || []).some((t) => t.toLowerCase().replace(/\s+/g, "-") === tagParam.toLowerCase())
+      );
+    }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (p) =>
+          p.name.toLowerCase().includes(query) ||
+          p.description.toLowerCase().includes(query) ||
+          (p.tags || []).some((t) => t.toLowerCase().includes(query))
       );
     }
 
@@ -57,18 +69,20 @@ function TiendaContent() {
     }
 
     return result;
-  }, [products, selectedCategory, tagParam, priceRange, sortBy]);
+  }, [products, selectedCategory, tagParam, priceRange, sortBy, searchQuery]);
 
   const clearFilters = () => {
     setSelectedCategory("all");
     setPriceRange([0, 500]);
     setSortBy("featured");
+    setSearchQuery("");
   };
 
   const activeFiltersCount =
     (selectedCategory !== "all" ? 1 : 0) +
     (priceRange[0] > 0 || priceRange[1] < 500 ? 1 : 0) +
-    (sortBy !== "featured" ? 1 : 0);
+    (sortBy !== "featured" ? 1 : 0) +
+    (searchQuery.trim() ? 1 : 0);
 
   return (
     <div className="min-h-screen bg-[#FDF9F3]">
@@ -85,6 +99,17 @@ function TiendaContent() {
           <p className="font-cormorant text-lg text-[#F6D3B3]/70">
             {filteredProducts.length} producto{filteredProducts.length !== 1 ? "s" : ""}
           </p>
+          {/* Search Bar */}
+          <div className="mt-6 max-w-md mx-auto relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#F6D3B3]/60" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Buscar productos..."
+              className="w-full pl-10 pr-4 py-3 bg-[#F6D3B3]/10 border border-[#F6D3B3]/30 rounded font-cormorant text-[#F6D3B3] placeholder-[#F6D3B3]/50 focus:outline-none focus:border-[#F6D3B3]/60"
+            />
+          </div>
         </div>
       </div>
 
@@ -125,6 +150,23 @@ function TiendaContent() {
             }`}
           >
             <div className="space-y-6">
+              {/* Search Filter Mobile/Sidebar */}
+              <div className="lg:hidden">
+                <h3 className="font-cinzel text-sm uppercase tracking-[0.2em] text-[#6B4423] mb-3">
+                  Búsqueda
+                </h3>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B4423]/60" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Buscar..."
+                    className="w-full pl-9 pr-3 py-2 border border-[#6B4423]/30 font-cormorant text-[#1A1A1A] focus:outline-none focus:border-[#6B4423]"
+                  />
+                </div>
+              </div>
+
               {/* Category Filter */}
               <div>
                 <h3 className="font-cinzel text-sm uppercase tracking-[0.2em] text-[#6B4423] mb-3">
