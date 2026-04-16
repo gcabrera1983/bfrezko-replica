@@ -112,7 +112,7 @@ export default function CheckoutPage() {
         router.push(`/checkout/success?orderId=${order.id}`);
 
       } catch (err: any) {
-        alert(err.message || 'Error al procesar el pedido. Intenta de nuevo.');
+        alert(err?.message || 'Error al procesar el pedido. Intenta de nuevo.');
         setIsProcessing(false);
       }
     }

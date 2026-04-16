@@ -47,6 +47,11 @@ export async function POST(request: NextRequest) {
 
     if (hasDatabase) {
       try {
+        // Validaciones básicas del body
+        if (!Array.isArray(body.items) || body.items.length === 0) {
+          return NextResponse.json({ error: 'El carrito está vacío.' }, { status: 400 })
+        }
+
         // Verificar que los productos existan para evitar errores de foreign key
         const productIds = body.items.map((item: any) => item.productId).filter(Boolean)
         const existingProducts = await prisma.product.findMany({
@@ -59,15 +64,15 @@ export async function POST(request: NextRequest) {
         if (missingIds.length > 0) {
           console.error('[API POST /orders] Productos no encontrados en DB:', missingIds)
           return NextResponse.json(
-            { error: `Productos no válidos en el carrito: ${missingIds.join(', ')}` },
+            { error: `Productos no válidos en el carrito: ${missingIds.join(', ')}. Vacía el carrito y vuelve a agregarlos desde la tienda.` },
             { status: 400 }
           )
         }
 
         const order = await prisma.order.create({
           data: {
-            total: body.total,
-            shippingCost: body.shippingCost || 0,
+            total: Number(body.total),
+            shippingCost: Number(body.shippingCost || 0),
             customerEmail: body.customer.email,
             customerName: `${body.customer.firstName} ${body.customer.lastName}`,
             customerPhone: body.customer.phone,
@@ -77,8 +82,8 @@ export async function POST(request: NextRequest) {
             postalCode: body.shipping.postalCode,
             items: {
               create: body.items.map((item: any) => ({
-                quantity: item.quantity,
-                price: item.price,
+                quantity: Number(item.quantity),
+                price: Number(item.price),
                 size: item.size,
                 color: item.color,
                 productId: item.productId
@@ -105,9 +110,12 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json(orderWithItems, { status: 201 })
       } catch (dbError: any) {
-        console.error('[API POST /orders] DB Error:', dbError.message)
+        console.error('[API POST /orders] DB Error:', dbError?.message || dbError)
+        console.error('[API POST /orders] DB Error details:', dbError?.meta || '')
+        // Devolver mensaje útil al cliente
+        const message = dbError?.message || 'Error al guardar la orden en la base de datos. Intenta de nuevo.'
         return NextResponse.json(
-          { error: 'Error al guardar la orden en la base de datos. Intenta de nuevo.' },
+          { error: message },
           { status: 500 }
         )
       }

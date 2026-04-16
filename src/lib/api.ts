@@ -105,7 +105,10 @@ export async function createOrder(orderData: {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(orderData)
   })
-  if (!res.ok) throw new Error('Error creando orden')
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}))
+    throw new Error(errBody.error || 'Error creando orden')
+  }
   const data = await res.json()
   return normalizeOrder(data)
 }
