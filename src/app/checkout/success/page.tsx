@@ -14,12 +14,15 @@ export default function CheckoutSuccessPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let isMounted = true
+    
     if (orderId) {
       // Intentar cargar desde localStorage primero para rapidez
       const pendingOrder = localStorage.getItem('pendingOrder')
       if (pendingOrder) {
         try {
-          setOrder(JSON.parse(pendingOrder))
+          const parsed = JSON.parse(pendingOrder)
+          if (isMounted) setOrder(parsed)
         } catch {}
       }
       
@@ -27,13 +30,17 @@ export default function CheckoutSuccessPage() {
       fetch(`/api/orders/${orderId}`)
         .then(res => res.ok ? res.json() : null)
         .then(data => {
-          if (data) setOrder(data)
+          if (data && isMounted) setOrder(data)
         })
         .catch(() => {})
-        .finally(() => setLoading(false))
+        .finally(() => {
+          if (isMounted) setLoading(false)
+        })
     } else {
       setLoading(false)
     }
+    
+    return () => { isMounted = false }
   }, [orderId])
 
   if (loading) {

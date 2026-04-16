@@ -98,7 +98,7 @@ export default function OrderTimeline({ history, currentStatus }: OrderTimelineP
   if (!lastEvent || lastEvent.status !== currentStatus) {
     const config = statusConfig[currentStatus] || statusConfig['PENDING']
     events.push({
-      id: `auto-${currentStatus}-${Date.now()}`,
+      id: `auto-${currentStatus}`,
       status: currentStatus,
       description: config?.label || `Estado: ${currentStatus}`,
       createdAt: new Date().toISOString()
