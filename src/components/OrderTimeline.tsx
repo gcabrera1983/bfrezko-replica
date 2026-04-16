@@ -91,7 +91,19 @@ const statusOrder = [
 
 export default function OrderTimeline({ history, currentStatus }: OrderTimelineProps) {
   // Si no hay historial, generar uno básico basado en el estado actual
-  const events = history.length > 0 ? history : generateBasicHistory(currentStatus)
+  let events = history.length > 0 ? [...history] : generateBasicHistory(currentStatus)
+
+  // Asegurar que el estado actual siempre esté representado en el timeline
+  const lastEvent = events[events.length - 1]
+  if (!lastEvent || lastEvent.status !== currentStatus) {
+    const config = statusConfig[currentStatus] || statusConfig['PENDING']
+    events.push({
+      id: `auto-${currentStatus}-${Date.now()}`,
+      status: currentStatus,
+      description: config?.label || `Estado: ${currentStatus}`,
+      createdAt: new Date().toISOString()
+    })
+  }
   
   // Obtener índice del estado actual
   const currentIndex = statusOrder.indexOf(currentStatus)
@@ -104,7 +116,6 @@ export default function OrderTimeline({ history, currentStatus }: OrderTimelineP
       <div className="space-y-0">
         {events.map((event, index) => {
           const config = statusConfig[event.status] || statusConfig['PENDING']
-          const isLast = index === events.length - 1
           const isActive = index === events.length - 1
           
           return (

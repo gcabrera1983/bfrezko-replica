@@ -56,6 +56,16 @@ export async function PUT(
     const body = await request.json()
 
     try {
+      // Obtener orden actual para comparar estado previo
+      const existingOrder = await prisma.order.findUnique({
+        where: { id },
+        select: { status: true }
+      })
+
+      if (!existingOrder) {
+        return NextResponse.json({ error: 'Orden no encontrada' }, { status: 404 })
+      }
+
       // Actualizar orden
       const data: any = {
         status: body.status,
@@ -73,19 +83,34 @@ export async function PUT(
       if (body.shippedAt) data.shippedAt = new Date(body.shippedAt)
       if (body.deliveredAt) data.deliveredAt = new Date(body.deliveredAt)
 
-      const order = await prisma.order.update({
+      await prisma.order.update({
         where: { id },
         data,
-        include: { items: { include: { product: true } }, trackingHistory: { orderBy: { createdAt: 'asc' } } }
       })
 
-      // Si hay nota, crear entrada en historial de tracking
-      if (body.note) {
+      // Siempre crear entrada en historial de tracking cuando cambia el estado
+      // o cuando hay nota manual del admin
+      const statusChanged = existingOrder.status !== body.status
+      if (statusChanged || body.note) {
+        const defaultDescriptions: Record<string, string> = {
+          PENDING: 'Orden recibida',
+          PAID: 'Pago confirmado',
+          PROCESSING: 'Pedido en preparación',
+          READY: 'Pedido listo para envío',
+          SHIPPED: body.trackingNumber
+            ? `Pedido enviado. Guía: ${body.trackingNumber}`
+            : 'Pedido enviado',
+          IN_TRANSIT: 'Pedido en tránsito',
+          OUT_FOR_DELIVERY: 'Pedido en reparto',
+          DELIVERED: 'Pedido entregado',
+          CANCELLED: 'Pedido cancelado',
+        }
+
         await prisma.orderTracking.create({
           data: {
             orderId: id,
             status: body.status,
-            description: body.note,
+            description: body.note || defaultDescriptions[body.status] || `Estado actualizado a ${body.status}`,
             location: body.location || 'Bodega Ágape',
             createdBy: 'admin'
           }
