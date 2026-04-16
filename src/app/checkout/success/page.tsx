@@ -15,10 +15,23 @@ export default function CheckoutSuccessPage() {
 
   useEffect(() => {
     if (orderId) {
+      // Intentar cargar desde localStorage primero para rapidez
       const pendingOrder = localStorage.getItem('pendingOrder')
       if (pendingOrder) {
-        setOrder(JSON.parse(pendingOrder))
+        try {
+          setOrder(JSON.parse(pendingOrder))
+        } catch {}
       }
+      
+      // Verificar contra el servidor para asegurar que existe
+      fetch(`/api/orders/${orderId}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data) setOrder(data)
+        })
+        .catch(() => {})
+        .finally(() => setLoading(false))
+    } else {
       setLoading(false)
     }
   }, [orderId])

@@ -110,7 +110,7 @@ function TrackingContent() {
                     type="text"
                     value={orderId}
                     onChange={(e) => setOrderId(e.target.value)}
-                    placeholder="Ej: ORD-123456"
+                    placeholder="Ej: ABC12345 o el ID completo"
                     className="w-full pl-10 pr-4 py-3 border border-[#6B4423]/20 font-cormorant focus:outline-none focus:border-[#6B4423]"
                   />
                 </div>

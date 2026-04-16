@@ -3,23 +3,44 @@ import { prisma } from '@/lib/prisma'
 import { serializeOrder } from '@/lib/serialize'
 import { sendOrderStatusUpdateEmail } from '@/lib/email'
 
-// GET /api/orders/[id] - Obtener orden
+// GET /api/orders/[id] - Obtener orden por ID completo o número corto (últimos 8 chars)
 export async function GET(
   request: NextRequest,
   { params }: any
 ) {
   try {
-    const id = params.id as string
+    const rawId = params.id as string
+    const cleanId = rawId.replace('#', '').trim().toLowerCase()
     
     try {
-      const order = await prisma.order.findUnique({
-        where: { id },
+      // Primero intentar búsqueda exacta por ID completo
+      let order = await prisma.order.findUnique({
+        where: { id: cleanId },
         include: { items: { include: { product: true } }, trackingHistory: { orderBy: { createdAt: 'asc' } } }
       })
+
+      // Si no se encuentra, buscar por los últimos 8 caracteres del ID (número de orden visible)
+      if (!order && cleanId.length >= 4) {
+        const candidates = await prisma.order.findMany({
+          where: {
+            id: {
+              endsWith: cleanId,
+              mode: 'insensitive'
+            }
+          },
+          include: { items: { include: { product: true } }, trackingHistory: { orderBy: { createdAt: 'asc' } } },
+          orderBy: { createdAt: 'desc' },
+          take: 1
+        })
+        order = candidates[0] || null
+      }
+
       if (order) return NextResponse.json(serializeOrder(order))
-    } catch {}
+    } catch (err: any) {
+      console.error('[API GET /orders/' + cleanId + '] Error:', err.message)
+    }
     
-    return NextResponse.json({ error: 'Orden no encontrada' }, { status: 404 })
+    return NextResponse.json({ error: 'Orden no encontrada. Verifica el número de orden.' }, { status: 404 })
   } catch (error) {
     return NextResponse.json({ error: 'Error al cargar orden' }, { status: 500 })
   }
