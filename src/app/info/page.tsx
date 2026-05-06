@@ -93,11 +93,11 @@ export default function InfoPage() {
             <div className="space-y-4 font-cormorant text-[#6B4423]/80">
               <div className="flex justify-between items-center py-3 border-b border-[#6B4423]/10">
                 <span>Ciudad Capital (Guatemala)</span>
-                <span className="font-cinzel text-[#6B4423]">Q20</span>
+                <span className="font-cinzel text-[#6B4423]">Q25</span>
               </div>
               <div className="flex justify-between items-center py-3 border-b border-[#6B4423]/10">
                 <span>Interior de la República</span>
-                <span className="font-cinzel text-[#6B4423]">Desde Q30</span>
+                <span className="font-cinzel text-[#6B4423]">Q35</span>
               </div>
             </div>
             

@@ -93,7 +93,7 @@ export default function CheckoutSuccessPage() {
                 <div className="flex justify-between font-cormorant mb-2">
                   <span className="text-[#6B4423]/70">Monto a pagar:</span>
                   <span className="font-cinzel text-lg text-[#6B4423]">
-                    Q{toFixedSafe(toNumberSafe(order?.total) + toNumberSafe(order?.shippingCost || 35))}
+                    Q{toFixedSafe(toNumberSafe(order?.total) + toNumberSafe(order?.shippingCost ?? 35))}
                   </span>
                 </div>
                 <p className="font-cormorant text-xs text-[#6B4423]/60">
@@ -146,7 +146,7 @@ export default function CheckoutSuccessPage() {
               <div className="border-t border-[#6B4423]/20 pt-3 mt-3">
                 <div className="flex justify-between font-cormorant">
                   <span className="text-[#6B4423]/70">Total</span>
-                  <span className="font-cinzel text-lg">Q{toFixedSafe(toNumberSafe(order?.total) + toNumberSafe(order?.shippingCost || 35))}</span>
+                  <span className="font-cinzel text-lg">Q{toFixedSafe(toNumberSafe(order?.total) + toNumberSafe(order?.shippingCost ?? 35))}</span>
                 </div>
               </div>
             </div>

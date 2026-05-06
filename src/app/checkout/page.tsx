@@ -119,12 +119,12 @@ export default function CheckoutPage() {
   };
 
   const getShippingCost = () => {
-    // Ciudad capital (Guatemala): Q20
-    // Interior: desde Q30
+    // Ciudad capital (Guatemala): Q25
+    // Interior: Q35
     if (formData.department === 'Guatemala' && formData.city.toLowerCase().includes('guatemala')) {
-      return 20;
+      return 25;
     }
-    return 30; // Desde Q30 para interior
+    return 35;
   };
 
   const getPaymentDescription = () => {
@@ -385,7 +385,7 @@ export default function CheckoutPage() {
                 <span className="text-[#6B4423]">{formatPrice(shippingCost)}</span>
               </div>
               <p className="font-cormorant text-xs text-[#6B4423]/50">
-                Envío Ciudad Capital: Q20 | Interior: desde Q30
+                Envío Ciudad Capital: Q25 | Interior: Q35
               </p>
             </div>
 
