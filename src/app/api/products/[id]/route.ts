@@ -82,11 +82,22 @@ export async function DELETE(
 ) {
   try {
     const id = params.id as string
-    try {
-      await prisma.product.delete({ where: { id } })
-    } catch {}
+    
+    // Verificar que el producto exista
+    const existing = await prisma.product.findUnique({ where: { id } })
+    if (!existing) {
+      return NextResponse.json({ error: 'Producto no encontrado' }, { status: 404 })
+    }
+    
+    // Eliminar primero los OrderItems relacionados (foreign key constraint)
+    await prisma.orderItem.deleteMany({ where: { productId: id } })
+    
+    // Luego eliminar el producto
+    await prisma.product.delete({ where: { id } })
+    
     return NextResponse.json({ success: true })
-  } catch (error) {
-    return NextResponse.json({ error: 'Error al eliminar producto' }, { status: 500 })
+  } catch (error: any) {
+    console.error('[API DELETE /products/' + params.id + '] Error:', error.message)
+    return NextResponse.json({ error: 'Error al eliminar producto: ' + error.message }, { status: 500 })
   }
 }
