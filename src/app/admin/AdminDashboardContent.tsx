@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAdmin } from "@/context/AdminContext";
 import { useProducts } from "@/context/ProductsContext";
@@ -18,14 +18,7 @@ export default function AdminDashboardContent() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      refreshProducts();
-      loadOrders();
-    }
-  }, [isAuthenticated, refreshProducts]);
-
-  const loadOrders = async () => {
+  const loadOrders = useCallback(async () => {
     try {
       setOrdersLoading(true);
       const data = await fetchOrders();
@@ -35,7 +28,14 @@ export default function AdminDashboardContent() {
     } finally {
       setOrdersLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      refreshProducts();
+      loadOrders();
+    }
+  }, [isAuthenticated, refreshProducts, loadOrders]);
 
   if (!isAuthenticated) {
     return (

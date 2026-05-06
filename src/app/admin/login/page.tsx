@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAdmin } from "@/context/AdminContext";
 import Logo from "@/components/Logo";
@@ -15,10 +15,22 @@ export default function AdminLoginPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
   // Si ya está autenticado, redirigir al dashboard
-  if (isAuthenticated) {
-    router.push("/admin");
-    return null;
+  useEffect(() => {
+    if (isAuthenticated) {
+      setIsRedirecting(true);
+      router.push("/admin");
+    }
+  }, [isAuthenticated, router]);
+
+  if (isRedirecting) {
+    return (
+      <div className="min-h-screen bg-[#1A1A1A] flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-[#F6D3B3] border-t-[#6B4423] rounded-full animate-spin" />
+      </div>
+    );
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

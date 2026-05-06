@@ -101,7 +101,7 @@ export default function OrderTimeline({ history, currentStatus }: OrderTimelineP
       id: `auto-${currentStatus}`,
       status: currentStatus,
       description: config?.label || `Estado: ${currentStatus}`,
-      createdAt: new Date().toISOString()
+      createdAt: new Date('2024-01-01T00:00:00Z').toISOString()
     })
   }
   
@@ -188,6 +188,7 @@ export default function OrderTimeline({ history, currentStatus }: OrderTimelineP
 function generateBasicHistory(currentStatus: string): TrackingEvent[] {
   const currentIndex = statusOrder.indexOf(currentStatus)
   const events: TrackingEvent[] = []
+  const baseDate = new Date('2024-01-01T00:00:00Z').getTime() // Fecha determinística
   
   for (let i = 0; i <= currentIndex && i < statusOrder.length; i++) {
     const status = statusOrder[i]
@@ -197,7 +198,7 @@ function generateBasicHistory(currentStatus: string): TrackingEvent[] {
       id: `basic-${i}`,
       status,
       description: config?.label || `Estado: ${status}`,
-      createdAt: new Date(Date.now() - (currentIndex - i) * 86400000).toISOString()
+      createdAt: new Date(baseDate + i * 86400000).toISOString()
     })
   }
   
