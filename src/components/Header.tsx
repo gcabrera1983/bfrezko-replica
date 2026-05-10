@@ -59,7 +59,7 @@ export default function Header() {
 
             {/* Logo */}
             <Link href="/" className="flex-shrink-0">
-              <LogoText variant="dark" size="md" />
+              <LogoText variant="dark" size="lg" />
             </Link>
 
             {/* Desktop Navigation */}
@@ -135,7 +135,7 @@ export default function Header() {
             >
               <div className="flex flex-col h-full">
                 <div className="flex items-center justify-between p-4 border-b border-[#6B4423]/10">
-                  <LogoText variant="dark" size="sm" />
+                  <LogoText variant="dark" size="lg" />
                   <button
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="p-2 text-[#6B4423] hover:text-[#889E81] transition-colors"
