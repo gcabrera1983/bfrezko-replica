@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Logo from "@/components/Logo";
 
 export default function NosotrosPage() {
@@ -8,15 +7,7 @@ export default function NosotrosPage() {
     <div className="min-h-screen bg-[#FDF9F3]">
       {/* Hero */}
       <section className="relative py-24 lg:py-32 bg-[#1A1A1A]">
-        <div className="absolute inset-0 opacity-10">
-          <Image
-            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1920&auto=format&fit=crop"
-            alt="Background"
-            fill
-            className="object-cover"
-          />
-        </div>
-        <div className="relative z-10 max-w-4xl mx-auto px-4 text-center">
+        <div className="max-w-4xl mx-auto px-4 text-center">
           <Logo variant="light" size="lg" showTagline />
           <h1 className="font-cinzel text-4xl md:text-5xl lg:text-6xl text-[#F6D3B3] mt-8 mb-6 tracking-wide">
             Nuestra Historia
