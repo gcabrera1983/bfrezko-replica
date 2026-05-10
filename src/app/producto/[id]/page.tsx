@@ -264,7 +264,7 @@ export default function ProductPage() {
             <div className="grid grid-cols-3 gap-4 mt-8 pt-8 border-t border-[#6B4423]/10">
               <div className="text-center">
                 <Truck className="w-6 h-6 mx-auto mb-2 text-[#889E81]" />
-                <p className="font-cormorant text-xs text-[#6B4423]/70">Envío Gratis</p>
+                <p className="font-cormorant text-xs text-[#6B4423]/70">Envío Gratis a partir de Q500</p>
               </div>
               <div className="text-center">
                 <RotateCcw className="w-6 h-6 mx-auto mb-2 text-[#889E81]" />
