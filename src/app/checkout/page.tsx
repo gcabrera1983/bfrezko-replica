@@ -177,7 +177,7 @@ export default function CheckoutPage() {
                   <h2 className="font-cinzel text-lg text-[#6B4423]">Información de Contacto</h2>
                   
                   <div>
-                    <label className="block font-cormorant text-sm text-[#6B4423]/70 mb-1">Correo electrónico</label>
+                    <label className="block font-cormorant text-sm text-[#6B4423]/70 mb-1">Correo electrónico <span className="text-red-500">*</span></label>
                     <input
                       type="email"
                       name="email"
@@ -191,24 +191,24 @@ export default function CheckoutPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block font-cormorant text-sm text-[#6B4423]/70 mb-1">Nombre</label>
+                      <label className="block font-cormorant text-sm text-[#6B4423]/70 mb-1">Nombre <span className="text-red-500">*</span></label>
                       <input type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} required className="w-full px-4 py-3 border border-[#6B4423]/20 font-cormorant bg-white" />
                     </div>
                     <div>
-                      <label className="block font-cormorant text-sm text-[#6B4423]/70 mb-1">Apellido</label>
+                      <label className="block font-cormorant text-sm text-[#6B4423]/70 mb-1">Apellido <span className="text-red-500">*</span></label>
                       <input type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} required className="w-full px-4 py-3 border border-[#6B4423]/20 font-cormorant bg-white" />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block font-cormorant text-sm text-[#6B4423]/70 mb-1">Teléfono</label>
+                    <label className="block font-cormorant text-sm text-[#6B4423]/70 mb-1">Teléfono <span className="text-red-500">*</span></label>
                     <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} required className="w-full px-4 py-3 border border-[#6B4423]/20 font-cormorant bg-white" placeholder="+502 XXXX XXXX" />
                   </div>
 
                   <h2 className="font-cinzel text-lg text-[#6B4423] pt-4">Dirección de Envío</h2>
                   
                   <div>
-                    <label className="block font-cormorant text-sm text-[#6B4423]/70 mb-1">Dirección</label>
+                    <label className="block font-cormorant text-sm text-[#6B4423]/70 mb-1">Dirección <span className="text-red-500">*</span></label>
                     <input type="text" name="address" value={formData.address} onChange={handleInputChange} required className="w-full px-4 py-3 border border-[#6B4423]/20 font-cormorant bg-white" placeholder="Calle y número" />
                   </div>
 
@@ -219,17 +219,17 @@ export default function CheckoutPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block font-cormorant text-sm text-[#6B4423]/70 mb-1">Ciudad</label>
+                      <label className="block font-cormorant text-sm text-[#6B4423]/70 mb-1">Ciudad <span className="text-red-500">*</span></label>
                       <input type="text" name="city" value={formData.city} onChange={handleInputChange} required className="w-full px-4 py-3 border border-[#6B4423]/20 font-cormorant bg-white" />
                     </div>
                     <div>
-                      <label className="block font-cormorant text-sm text-[#6B4423]/70 mb-1">Código Postal</label>
+                      <label className="block font-cormorant text-sm text-[#6B4423]/70 mb-1">Código Postal <span className="text-red-500">*</span></label>
                       <input type="text" name="postalCode" value={formData.postalCode} onChange={handleInputChange} required className="w-full px-4 py-3 border border-[#6B4423]/20 font-cormorant bg-white" />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block font-cormorant text-sm text-[#6B4423]/70 mb-1">Departamento</label>
+                    <label className="block font-cormorant text-sm text-[#6B4423]/70 mb-1">Departamento <span className="text-red-500">*</span></label>
                     <select name="department" value={formData.department} onChange={handleInputChange} required className="w-full px-4 py-3 border border-[#6B4423]/20 font-cormorant bg-white">
                       <option value="">Selecciona un departamento</option>
                       <option value="Guatemala">Guatemala</option>
@@ -258,7 +258,7 @@ export default function CheckoutPage() {
                   </div>
 
                   <div>
-                    <label className="block font-cormorant text-sm text-[#6B4423]/70 mb-1">Zona de envío</label>
+                    <label className="block font-cormorant text-sm text-[#6B4423]/70 mb-1">Zona de envío <span className="text-red-500">*</span></label>
                     <div className="grid grid-cols-2 gap-4">
                       <label className={`flex items-center justify-center gap-2 px-4 py-3 border-2 rounded-lg cursor-pointer transition-colors ${shippingZone === 'capital' ? 'border-[#6B4423] bg-[#F6D3B3]/10' : 'border-[#6B4423]/20'}`}>
                         <input type="radio" name="shippingZone" value="capital" checked={shippingZone === 'capital'} onChange={() => setShippingZone('capital')} className="hidden" required />
