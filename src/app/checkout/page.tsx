@@ -272,8 +272,7 @@ export default function CheckoutPage() {
                   <h2 className="font-cinzel text-lg text-[#6B4423]">Método de Pago</h2>
                   
                   <div className="space-y-3">
-                    <label className={`flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-colors ${paymentMethod === 'cod' ? 'border-[#6B4423] bg-[#F6D3B3]/10' : 'border-[#6B4423]/20'}`}>
-                      <input type="radio" name="payment" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="hidden" />
+                    <div className="flex items-center gap-3 p-4 border-2 border-[#6B4423] bg-[#F6D3B3]/10 rounded-lg">
                       <div className="w-10 h-10 bg-[#6B4423] rounded-full flex items-center justify-center flex-shrink-0">
                         <Banknote className="w-5 h-5 text-[#F6D3B3]" />
                       </div>
@@ -281,45 +280,8 @@ export default function CheckoutPage() {
                         <span className="font-cinzel text-[#6B4423]">Pago Contra Entrega</span>
                         <p className="font-cormorant text-sm text-[#6B4423]/70">Paga en efectivo cuando recibas tu pedido</p>
                       </div>
-                      <div className={`w-5 h-5 rounded-full border-2 ${paymentMethod === 'cod' ? 'bg-[#6B4423] border-[#6B4423]' : 'border-[#6B4423]/30'}`} />
-                    </label>
-
-                    <label className={`flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-colors ${paymentMethod === '50transfer' ? 'border-[#6B4423] bg-[#F6D3B3]/10' : 'border-[#6B4423]/20'}`}>
-                      <input type="radio" name="payment" value="50transfer" checked={paymentMethod === '50transfer'} onChange={() => setPaymentMethod('50transfer')} className="hidden" />
-                      <div className="w-10 h-10 bg-[#889E81] rounded-full flex items-center justify-center flex-shrink-0">
-                        <CreditCard className="w-5 h-5 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <span className="font-cinzel text-[#6B4423]">50% Transferencia + 50% Contra Entrega</span>
-                        <p className="font-cormorant text-sm text-[#6B4423]/70">Abona la mitad por transferencia y el resto al recibir</p>
-                      </div>
-                      <div className={`w-5 h-5 rounded-full border-2 ${paymentMethod === '50transfer' ? 'bg-[#6B4423] border-[#6B4423]' : 'border-[#6B4423]/30'}`} />
-                    </label>
-
-                    <label className={`flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-colors ${paymentMethod === '100transfer' ? 'border-[#6B4423] bg-[#F6D3B3]/10' : 'border-[#6B4423]/20'}`}>
-                      <input type="radio" name="payment" value="100transfer" checked={paymentMethod === '100transfer'} onChange={() => setPaymentMethod('100transfer')} className="hidden" />
-                      <div className="w-10 h-10 bg-[#6B4423] rounded-full flex items-center justify-center flex-shrink-0">
-                        <CreditCard className="w-5 h-5 text-[#F6D3B3]" />
-                      </div>
-                      <div className="flex-1">
-                        <span className="font-cinzel text-[#6B4423]">100% Transferencia Bancaria</span>
-                        <p className="font-cormorant text-sm text-[#6B4423]/70">Pago completo por transferencia antes del envío</p>
-                      </div>
-                      <div className={`w-5 h-5 rounded-full border-2 ${paymentMethod === '100transfer' ? 'bg-[#6B4423] border-[#6B4423]' : 'border-[#6B4423]/30'}`} />
-                    </label>
-                  </div>
-
-                  {paymentMethod !== 'cod' && (
-                    <div className="bg-[#889E81]/10 border border-[#889E81]/30 p-4 rounded">
-                      <p className="font-cormorant text-sm text-[#6B4423]">
-                        <strong>Información bancaria:</strong><br />
-                        Banco: BAC Credomatic<br />
-                        Cuenta: 1234567890<br />
-                        Nombre: Ágape Studio<br />
-                        Enviar comprobante a: hola@agapestudio.com
-                      </p>
                     </div>
-                  )}
+                  </div>
 
                   <div className="bg-[#889E81]/10 border border-[#889E81]/30 p-4 rounded">
                     <div className="flex items-start gap-3">

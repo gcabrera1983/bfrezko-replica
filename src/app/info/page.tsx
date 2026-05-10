@@ -167,36 +167,6 @@ export default function InfoPage() {
                   </p>
                 </div>
               </div>
-              
-              <div className="flex items-start gap-4 p-4 border border-[#6B4423]/20 rounded-lg">
-                <div className="w-10 h-10 bg-[#889E81] rounded-full flex items-center justify-center flex-shrink-0">
-                  <span className="text-white font-cinzel font-bold">2</span>
-                </div>
-                <div>
-                  <h3 className="font-cinzel text-[#6B4423] mb-1">50% Transferencia + 50% Contra Entrega</h3>
-                  <p className="font-cormorant text-sm text-[#6B4423]/70">
-                    Abona el 50% por transferencia bancaria y el 50% restante al momento de la entrega.
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-4 p-4 border border-[#6B4423]/20 rounded-lg">
-                <div className="w-10 h-10 bg-[#6B4423] rounded-full flex items-center justify-center flex-shrink-0">
-                  <span className="text-[#F6D3B3] font-cinzel font-bold">3</span>
-                </div>
-                <div>
-                  <h3 className="font-cinzel text-[#6B4423] mb-1">100% Transferencia Bancaria</h3>
-                  <p className="font-cormorant text-sm text-[#6B4423]/70 mb-2">
-                    Pago completo por transferencia antes del envío.
-                  </p>
-                  <div className="bg-[#F6D3B3]/20 p-3 rounded text-sm">
-                    <p><strong>Banco:</strong> BAC Credomatic</p>
-                    <p><strong>Cuenta:</strong> 1234567890</p>
-                    <p><strong>Nombre:</strong> Ágape Studio</p>
-                    <p><strong>Enviar comprobante a:</strong> hola@agapestudio.com</p>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </section>
