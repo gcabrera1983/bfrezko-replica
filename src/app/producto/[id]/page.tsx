@@ -176,7 +176,10 @@ export default function ProductPage() {
             <div className="mb-6">
               <h3 className="font-cinzel text-sm uppercase tracking-wider text-[#6B4423] mb-3">Talla</h3>
               <div className="inline-flex">
-                {(product.sizes || []).map((size, index) => (
+                {([...(product.sizes || [])].sort((a, b) => {
+                  const order = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+                  return order.indexOf(a) - order.indexOf(b);
+                })).map((size, index) => (
                   <button
                     key={size}
                     type="button"
