@@ -175,19 +175,32 @@ export default function ProductPage() {
             {/* Sizes */}
             <div className="mb-6">
               <h3 className="font-cinzel text-sm uppercase tracking-wider text-[#6B4423] mb-3">Talla</h3>
-              <div className="flex flex-wrap gap-2">
-                {(product.sizes || []).map((size) => (
+              <div className="inline-flex">
+                {(product.sizes || []).map((size, index) => (
                   <button
                     key={size}
                     type="button"
                     onClick={() => setSelectedSize(size)}
-                    className={`w-12 h-12 border-2 font-cinzel transition-all ${
+                    className={`relative px-4 py-2.5 font-cinzel text-sm transition-all ${
                       selectedSize === size
-                        ? "border-[#6B4423] bg-[#6B4423] text-[#F6D3B3]"
-                        : "border-[#6B4423]/30 text-[#6B4423] hover:border-[#6B4423]"
+                        ? "bg-[#6B4423] text-[#F6D3B3]"
+                        : "bg-white text-[#6B4423] hover:bg-[#F6D3B3]/20"
+                    } ${
+                      index === 0
+                        ? "rounded-l-md border-y-2 border-l-2 border-[#6B4423]/30"
+                        : index === (product.sizes || []).length - 1
+                        ? "rounded-r-md border-y-2 border-r-2 border-[#6B4423]/30"
+                        : "border-y-2 border-[#6B4423]/30"
+                    } ${
+                      selectedSize === size
+                        ? "border-[#6B4423] z-10"
+                        : ""
                     }`}
                   >
                     {size}
+                    {index < (product.sizes || []).length - 1 && (
+                      <span className="absolute right-0 top-1/2 -translate-y-1/2 w-px h-5 bg-[#6B4423]/20" />
+                    )}
                   </button>
                 ))}
               </div>
