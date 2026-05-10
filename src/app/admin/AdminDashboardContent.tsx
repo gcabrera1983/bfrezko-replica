@@ -179,68 +179,66 @@ export default function AdminDashboardContent() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {(emailConfigured === false || emailTestResult) && (
-          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <p className="font-cinzel text-sm text-yellow-800">
-                  {emailConfigured === false ? 'Servicio de email no configurado' : 'Diagnóstico de email'}
-                </p>
-                <p className="font-cormorant text-sm text-yellow-700 mt-1">
-                  {emailConfigured === false
-                    ? 'Los emails de confirmación de pedido no se están enviando a los clientes. Usa el botón de abajo para diagnosticar.'
-                    : 'Resultado del último test:'}
-                </p>
+        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-cinzel text-sm text-yellow-800">
+                {emailConfigured === false ? 'Servicio de email no configurado' : 'Diagnóstico de email'}
+              </p>
+              <p className="font-cormorant text-sm text-yellow-700 mt-1">
+                {emailConfigured === false
+                  ? 'Los emails de confirmación de pedido no se están enviando a los clientes. Usa el botón de abajo para diagnosticar.'
+                  : 'Escribe tu correo y haz clic en enviar para probar la configuración.'}
+              </p>
 
-                {emailTestResult && (
-                  <div className={`mt-3 p-3 rounded text-sm font-cormorant ${emailTestResult.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                    {emailTestResult.success ? (
-                      <p>✅ Email enviado correctamente. Revisa la bandeja de entrada de <strong>{emailTestResult.to}</strong></p>
-                    ) : (
-                      <p>❌ Error: <strong>{emailTestResult.error}</strong></p>
-                    )}
-                  </div>
-                )}
-
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <input
-                    type="email"
-                    value={testEmailAddress}
-                    onChange={(e) => setTestEmailAddress(e.target.value)}
-                    placeholder="tucorreo@gmail.com"
-                    className="px-3 py-2 border border-yellow-300 rounded font-cormorant text-sm bg-white"
-                  />
-                  <button
-                    onClick={async () => {
-                      setEmailTestLoading(true);
-                      setEmailTestResult(null);
-                      try {
-                        const res = await fetch('/api/admin/email-test', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ to: testEmailAddress })
-                        });
-                        const data = await res.json();
-                        setEmailTestResult(data);
-                        setEmailConfigured(data.success);
-                      } catch (err) {
-                        setEmailTestResult({ success: false, error: 'Error de conexión' });
-                      } finally {
-                        setEmailTestLoading(false);
-                      }
-                    }}
-                    disabled={emailTestLoading || !testEmailAddress}
-                    className="px-4 py-2 bg-[#6B4423] text-[#F6D3B3] font-cinzel text-xs uppercase tracking-wider rounded hover:bg-[#6B4423]/90 disabled:opacity-50 flex items-center gap-2"
-                  >
-                    {emailTestLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
-                    {emailTestLoading ? 'Enviando...' : 'Enviar email de prueba'}
-                  </button>
+              {emailTestResult && (
+                <div className={`mt-3 p-3 rounded text-sm font-cormorant ${emailTestResult.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                  {emailTestResult.success ? (
+                    <p>✅ Email enviado correctamente. Revisa la bandeja de entrada de <strong>{emailTestResult.to}</strong></p>
+                  ) : (
+                    <p>❌ Error: <strong>{emailTestResult.error}</strong></p>
+                  )}
                 </div>
+              )}
+
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <input
+                  type="email"
+                  value={testEmailAddress}
+                  onChange={(e) => setTestEmailAddress(e.target.value)}
+                  placeholder="tucorreo@gmail.com"
+                  className="px-3 py-2 border border-yellow-300 rounded font-cormorant text-sm bg-white"
+                />
+                <button
+                  onClick={async () => {
+                    setEmailTestLoading(true);
+                    setEmailTestResult(null);
+                    try {
+                      const res = await fetch('/api/admin/email-test', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ to: testEmailAddress })
+                      });
+                      const data = await res.json();
+                      setEmailTestResult(data);
+                      setEmailConfigured(data.success);
+                    } catch (err) {
+                      setEmailTestResult({ success: false, error: 'Error de conexión' });
+                    } finally {
+                      setEmailTestLoading(false);
+                    }
+                  }}
+                  disabled={emailTestLoading || !testEmailAddress}
+                  className="px-4 py-2 bg-[#6B4423] text-[#F6D3B3] font-cinzel text-xs uppercase tracking-wider rounded hover:bg-[#6B4423]/90 disabled:opacity-50 flex items-center gap-2"
+                >
+                  {emailTestLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                  {emailTestLoading ? 'Enviando...' : 'Enviar email de prueba'}
+                </button>
               </div>
             </div>
           </div>
-        )}
+        </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
