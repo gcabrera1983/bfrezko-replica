@@ -158,6 +158,10 @@ export default function CheckoutSuccessPage() {
                 <>
                   Te hemos enviado un correo de confirmación a:<br />
                   <strong className="text-[#6B4423]">{order?.customerEmail || order?.customer?.email}</strong>
+                  <br />
+                  <span className="text-xs text-[#6B4423]/50">
+                    (Si no lo ves, revisa tu carpeta de Spam o Promociones)
+                  </span>
                 </>
               ) : (
                 <span className="text-[#6B4423]/50">
