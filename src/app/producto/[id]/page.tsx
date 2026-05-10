@@ -21,6 +21,18 @@ export default function ProductPage() {
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
+
+  const colors = product?.colors || [];
+  const hasSingleColor = colors.length === 1;
+
+  // Auto-select color if only one available
+  useEffect(() => {
+    if (product && colors.length === 1 && colors[0]) {
+      const colorName = colors[0].name || 'Color 1';
+      setSelectedColor(colorName);
+    }
+  }, [product?.id, colors]);
+
   // Las imágenes vienen directamente del producto (URLs de Unsplash o referencias)
   const productImages = product?.images?.length > 0 
     ? product.images 
@@ -54,7 +66,7 @@ export default function ProductPage() {
   }
 
   const handleAddToCart = () => {
-    if (!selectedSize || !selectedColor) return;
+    if (!selectedSize || (!hasSingleColor && !selectedColor)) return;
 
     addToCart({
       product,
@@ -135,42 +147,44 @@ export default function ProductPage() {
             <p className="font-cormorant text-lg text-[#1A1A1A]/70 mb-8 leading-relaxed">{product.description}</p>
 
             {/* Colors */}
-            <div className="mb-6">
-              <h3 className="font-cinzel text-sm uppercase tracking-wider text-[#6B4423] mb-3">
-                Color: <span className="font-cormorant normal-case">{selectedColor || "Selecciona"}</span>
-              </h3>
-              <div className="flex gap-2">
-                {(product.colors || []).map((color, index) => {
-                  const colorName = color?.name || `Color ${index + 1}`;
-                  const colorValue = color?.value || "#cccccc";
-                  const isSelected = selectedColor === colorName;
-                  return (
-                    <button
-                      key={`${colorValue}-${index}`}
-                      type="button"
-                      onClick={() => {
-                        console.log('[ProductPage] Color seleccionado:', colorName);
-                        setSelectedColor(colorName);
-                      }}
-                      className={`relative w-12 h-12 rounded-full border-2 transition-all active:scale-95 ${
-                        isSelected
-                          ? "border-[#6B4423] ring-2 ring-[#6B4423] ring-offset-2"
-                          : "border-[#6B4423]/30 hover:border-[#6B4423]"
-                      }`}
-                      style={{ backgroundColor: colorValue }}
-                      title={colorName}
-                      aria-label={`Seleccionar ${colorName}`}
-                    >
-                      {isSelected && (
-                        <span className="absolute inset-0 flex items-center justify-center">
-                          <Check className="w-5 h-5 text-white drop-shadow-md" />
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
+            {colors.length > 1 && (
+              <div className="mb-6">
+                <h3 className="font-cinzel text-sm uppercase tracking-wider text-[#6B4423] mb-3">
+                  Color: <span className="font-cormorant normal-case">{selectedColor || "Selecciona"}</span>
+                </h3>
+                <div className="flex gap-2">
+                  {colors.map((color, index) => {
+                    const colorName = color?.name || `Color ${index + 1}`;
+                    const colorValue = color?.value || "#cccccc";
+                    const isSelected = selectedColor === colorName;
+                    return (
+                      <button
+                        key={`${colorValue}-${index}`}
+                        type="button"
+                        onClick={() => {
+                          console.log('[ProductPage] Color seleccionado:', colorName);
+                          setSelectedColor(colorName);
+                        }}
+                        className={`relative w-12 h-12 rounded-full border-2 transition-all active:scale-95 ${
+                          isSelected
+                            ? "border-[#6B4423] ring-2 ring-[#6B4423] ring-offset-2"
+                            : "border-[#6B4423]/30 hover:border-[#6B4423]"
+                        }`}
+                        style={{ backgroundColor: colorValue }}
+                        title={colorName}
+                        aria-label={`Seleccionar ${colorName}`}
+                      >
+                        {isSelected && (
+                          <span className="absolute inset-0 flex items-center justify-center">
+                            <Check className="w-5 h-5 text-white drop-shadow-md" />
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Sizes */}
             <div className="mb-6">
@@ -234,7 +248,7 @@ export default function ProductPage() {
             {/* Add to Cart */}
             <button
               onClick={handleAddToCart}
-              disabled={!selectedSize || !selectedColor}
+              disabled={!selectedSize || (!hasSingleColor && !selectedColor)}
               className={`w-full py-4 font-cinzel uppercase tracking-wider flex items-center justify-center gap-2 transition-all ${
                 addedToCart
                   ? "bg-[#889E81] text-white"
@@ -254,9 +268,9 @@ export default function ProductPage() {
               )}
             </button>
 
-            {!selectedSize || !selectedColor ? (
+            {!selectedSize || (!hasSingleColor && !selectedColor) ? (
               <p className="font-cormorant text-sm text-[#6B4423]/60 mt-2 text-center">
-                Selecciona talla y color para continuar
+                {hasSingleColor ? "Selecciona talla para continuar" : "Selecciona talla y color para continuar"}
               </p>
             ) : null}
 
