@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAdmin } from "@/context/AdminContext";
 import { useProducts } from "@/context/ProductsContext";
 import Link from "next/link";
-import { Package, ShoppingBag, TrendingUp, Eye, Plus, Edit, Trash2, LogOut, Images, Loader2, Users, UserPlus, X, AlertTriangle } from "lucide-react";
+import { Package, ShoppingBag, TrendingUp, Eye, Plus, Edit, Trash2, LogOut, Images, Loader2, Users, UserPlus, X, AlertTriangle, Mail } from "lucide-react";
 import AdminProductImage from "@/components/admin/AdminProductImage";
 import { fetchOrders } from "@/lib/api";
 import { Order } from "@/types";
@@ -34,6 +34,9 @@ export default function AdminDashboardContent() {
   const [newUser, setNewUser] = useState({ email: '', password: '', name: '' });
   const [userFormError, setUserFormError] = useState('');
   const [emailConfigured, setEmailConfigured] = useState<boolean | null>(null);
+  const [emailTestLoading, setEmailTestLoading] = useState(false);
+  const [emailTestResult, setEmailTestResult] = useState<any>(null);
+  const [testEmailAddress, setTestEmailAddress] = useState('');
 
   const loadOrders = useCallback(async () => {
     try {
@@ -176,15 +179,65 @@ export default function AdminDashboardContent() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {emailConfigured === false && (
-          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="font-cinzel text-sm text-yellow-800">Servicio de email no configurado</p>
-              <p className="font-cormorant text-sm text-yellow-700 mt-1">
-                Los emails de confirmación de pedido no se están enviando a los clientes.
-                Configura <strong>RESEND_API_KEY</strong> en las variables de entorno de Vercel.
-              </p>
+        {(emailConfigured === false || emailTestResult) && (
+          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="font-cinzel text-sm text-yellow-800">
+                  {emailConfigured === false ? 'Servicio de email no configurado' : 'Diagnóstico de email'}
+                </p>
+                <p className="font-cormorant text-sm text-yellow-700 mt-1">
+                  {emailConfigured === false
+                    ? 'Los emails de confirmación de pedido no se están enviando a los clientes. Usa el botón de abajo para diagnosticar.'
+                    : 'Resultado del último test:'}
+                </p>
+
+                {emailTestResult && (
+                  <div className={`mt-3 p-3 rounded text-sm font-cormorant ${emailTestResult.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                    {emailTestResult.success ? (
+                      <p>✅ Email enviado correctamente. Revisa la bandeja de entrada de <strong>{emailTestResult.to}</strong></p>
+                    ) : (
+                      <p>❌ Error: <strong>{emailTestResult.error}</strong></p>
+                    )}
+                  </div>
+                )}
+
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <input
+                    type="email"
+                    value={testEmailAddress}
+                    onChange={(e) => setTestEmailAddress(e.target.value)}
+                    placeholder="tucorreo@gmail.com"
+                    className="px-3 py-2 border border-yellow-300 rounded font-cormorant text-sm bg-white"
+                  />
+                  <button
+                    onClick={async () => {
+                      setEmailTestLoading(true);
+                      setEmailTestResult(null);
+                      try {
+                        const res = await fetch('/api/admin/email-test', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ to: testEmailAddress })
+                        });
+                        const data = await res.json();
+                        setEmailTestResult(data);
+                        setEmailConfigured(data.success);
+                      } catch (err) {
+                        setEmailTestResult({ success: false, error: 'Error de conexión' });
+                      } finally {
+                        setEmailTestLoading(false);
+                      }
+                    }}
+                    disabled={emailTestLoading || !testEmailAddress}
+                    className="px-4 py-2 bg-[#6B4423] text-[#F6D3B3] font-cinzel text-xs uppercase tracking-wider rounded hover:bg-[#6B4423]/90 disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {emailTestLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                    {emailTestLoading ? 'Enviando...' : 'Enviar email de prueba'}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}
