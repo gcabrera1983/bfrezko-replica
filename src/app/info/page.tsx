@@ -136,6 +136,10 @@ export default function InfoPage() {
                 <span>Interior de la República</span>
                 <span className="font-cinzel text-[#6B4423]">Q35</span>
               </div>
+              <div className="flex justify-between items-center py-3 bg-[#889E81]/10 px-4 rounded">
+                <span>🎉 Envío Gratis</span>
+                <span className="font-cinzel text-[#889E81]">A partir de Q500</span>
+              </div>
             </div>
             
             <div className="mt-6 p-4 bg-[#889E81]/10 rounded">

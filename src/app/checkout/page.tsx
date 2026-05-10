@@ -29,6 +29,7 @@ export default function CheckoutPage() {
   const [step, setStep] = useState<"information" | "confirmation">("information");
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cod');
+  const [shippingZone, setShippingZone] = useState<'capital' | 'interior' | ''>('');
   const [formData, setFormData] = useState<FormData>({
     email: "",
     firstName: "",
@@ -119,11 +120,10 @@ export default function CheckoutPage() {
   };
 
   const getShippingCost = () => {
-    // Ciudad capital (Guatemala): Q25
-    // Interior: Q35
-    if (formData.department === 'Guatemala' && formData.city.toLowerCase().includes('guatemala')) {
-      return 25;
-    }
+    // Envío gratis a partir de Q500
+    if (totalPrice >= 500) return 0;
+    // Capital: Q25 | Interior: Q35
+    if (shippingZone === 'capital') return 25;
     return 35;
   };
 
@@ -144,7 +144,7 @@ export default function CheckoutPage() {
   const isStepValid = () => {
     return formData.email && formData.firstName && formData.lastName && 
            formData.phone && formData.address && formData.city && 
-           formData.department && formData.postalCode;
+           formData.department && formData.postalCode && shippingZone;
   };
 
   return (
@@ -252,6 +252,27 @@ export default function CheckoutPage() {
                       <option value="Chimaltenango">Chimaltenango</option>
                     </select>
                   </div>
+
+                  <div>
+                    <label className="block font-cormorant text-sm text-[#6B4423]/70 mb-1">Zona de envío</label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <label className={`flex items-center justify-center gap-2 px-4 py-3 border-2 rounded-lg cursor-pointer transition-colors ${shippingZone === 'capital' ? 'border-[#6B4423] bg-[#F6D3B3]/10' : 'border-[#6B4423]/20'}`}>
+                        <input type="radio" name="shippingZone" value="capital" checked={shippingZone === 'capital'} onChange={() => setShippingZone('capital')} className="hidden" required />
+                        <MapPin className="w-4 h-4 text-[#6B4423]" />
+                        <span className="font-cinzel text-sm text-[#6B4423]">Capital Q25</span>
+                      </label>
+                      <label className={`flex items-center justify-center gap-2 px-4 py-3 border-2 rounded-lg cursor-pointer transition-colors ${shippingZone === 'interior' ? 'border-[#6B4423] bg-[#F6D3B3]/10' : 'border-[#6B4423]/20'}`}>
+                        <input type="radio" name="shippingZone" value="interior" checked={shippingZone === 'interior'} onChange={() => setShippingZone('interior')} className="hidden" required />
+                        <Truck className="w-4 h-4 text-[#6B4423]" />
+                        <span className="font-cinzel text-sm text-[#6B4423]">Interior Q35</span>
+                      </label>
+                    </div>
+                    {totalPrice >= 500 && (
+                      <p className="font-cormorant text-sm text-[#889E81] mt-2 text-center">
+                        🎉 Tu pedido aplica para <strong>envío gratis</strong>
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -344,10 +365,10 @@ export default function CheckoutPage() {
               </div>
               <div className="flex justify-between text-sm font-cormorant">
                 <span className="text-[#6B4423]/70">Envío</span>
-                <span className="text-[#6B4423]">{formatPrice(shippingCost)}</span>
+                <span className="text-[#6B4423]">{shippingCost === 0 ? 'Gratis' : formatPrice(shippingCost)}</span>
               </div>
               <p className="font-cormorant text-xs text-[#6B4423]/50">
-                Envío Ciudad Capital: Q25 | Interior: Q35
+                {totalPrice >= 500 ? 'Envío gratis por compras mayores a Q500' : `Capital: Q25 | Interior: Q35`}
               </p>
             </div>
 
