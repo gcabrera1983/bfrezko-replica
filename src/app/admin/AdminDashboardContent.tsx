@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAdmin } from "@/context/AdminContext";
 import { useProducts } from "@/context/ProductsContext";
 import Link from "next/link";
-import { Package, ShoppingBag, TrendingUp, Eye, Plus, Edit, Trash2, LogOut, Images, Loader2, Users, UserPlus, X } from "lucide-react";
+import { Package, ShoppingBag, TrendingUp, Eye, Plus, Edit, Trash2, LogOut, Images, Loader2, Users, UserPlus, X, AlertTriangle } from "lucide-react";
 import AdminProductImage from "@/components/admin/AdminProductImage";
 import { fetchOrders } from "@/lib/api";
 import { Order } from "@/types";
@@ -33,6 +33,7 @@ export default function AdminDashboardContent() {
   const [showUserForm, setShowUserForm] = useState(false);
   const [newUser, setNewUser] = useState({ email: '', password: '', name: '' });
   const [userFormError, setUserFormError] = useState('');
+  const [emailConfigured, setEmailConfigured] = useState<boolean | null>(null);
 
   const loadOrders = useCallback(async () => {
     try {
@@ -66,6 +67,13 @@ export default function AdminDashboardContent() {
       refreshProducts();
       loadOrders();
       loadTrackerUsers();
+      // Verificar configuración de email
+      fetch('/api/admin/config')
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data) setEmailConfigured(data.emailConfigured);
+        })
+        .catch(() => {});
     }
   }, [isAuthenticated, refreshProducts, loadOrders, loadTrackerUsers]);
 
@@ -168,6 +176,19 @@ export default function AdminDashboardContent() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {emailConfigured === false && (
+          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-cinzel text-sm text-yellow-800">Servicio de email no configurado</p>
+              <p className="font-cormorant text-sm text-yellow-700 mt-1">
+                Los emails de confirmación de pedido no se están enviando a los clientes.
+                Configura <strong>RESEND_API_KEY</strong> en las variables de entorno de Vercel.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {stats.map((stat) => (
