@@ -11,6 +11,13 @@ export async function sendOrderConfirmationEmail(order: any) {
     return;
   }
 
+  console.log('[Email] Enviando confirmación a cliente:', order.customerEmail);
+
+  if (!order.customerEmail) {
+    console.error('[Email] ERROR: customerEmail está vacío. No se puede enviar email al cliente.');
+    return;
+  }
+
   const itemsHtml = order.items?.map((item: any) => {
     const name = item.name || item.product?.name || 'Producto';
     const qty = item.quantity || 1;
