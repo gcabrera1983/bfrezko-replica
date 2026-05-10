@@ -277,7 +277,7 @@ export default function EditarProductoPage() {
           <div className="bg-white p-6 rounded-lg border border-[#6B4423]/10">
             <h2 className="font-cinzel text-lg text-[#6B4423] mb-4">Tallas Disponibles</h2>
             <div className="flex flex-wrap gap-2">
-              {["XS", "S", "M", "L", "XL", "XXL"].map((size) => (
+              {["XS", "S", "M", "L", "XL", "XXL", "XXXL"].map((size) => (
                 <button
                   key={size}
                   type="button"

@@ -14,7 +14,7 @@ export const products: Product[] = [
     ],
     category: "Colección Principal",
     tags: ["He Loved Me So Much", "Algodón 100%", "Nuevo"],
-    sizes: ["S", "M", "L", "XL"],
+    sizes: ["S", "M", "L", "XL", "XXL", "XXXL"],
     colors: [
       { name: "Negro", value: "#000000" },
     ],
@@ -35,7 +35,7 @@ export const products: Product[] = [
     ],
     category: "Colección Principal",
     tags: ["God's With Me", "Algodón 100%", "Nuevo"],
-    sizes: ["S", "M", "L", "XL"],
+    sizes: ["S", "M", "L", "XL", "XXL", "XXXL"],
     colors: [
       { name: "Blanco", value: "#FFFFFF" },
     ],
@@ -56,7 +56,7 @@ export const products: Product[] = [
     ],
     category: "Colección Principal",
     tags: ["The Agape Foundation", "Logo", "Algodón 100%"],
-    sizes: ["S", "M", "L", "XL"],
+    sizes: ["S", "M", "L", "XL", "XXL", "XXXL"],
     colors: [
       { name: "Negro", value: "#000000" },
       { name: "Beige", value: "#D4A574" },
