@@ -5,11 +5,21 @@ import { useRouter } from "next/navigation";
 import { useAdmin } from "@/context/AdminContext";
 import { useProducts } from "@/context/ProductsContext";
 import Link from "next/link";
-import { Package, ShoppingBag, TrendingUp, Eye, Plus, Edit, Trash2, LogOut, Images, Loader2 } from "lucide-react";
+import { Package, ShoppingBag, TrendingUp, Eye, Plus, Edit, Trash2, LogOut, Images, Loader2, Users, UserPlus, X } from "lucide-react";
 import AdminProductImage from "@/components/admin/AdminProductImage";
 import { fetchOrders } from "@/lib/api";
 import { Order } from "@/types";
 import { toFixedSafe, toNumberSafe } from "@/lib/utils";
+
+interface TrackerUser {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  isActive: boolean;
+  lastLogin: string | null;
+  createdAt: string;
+}
 
 export default function AdminDashboardContent() {
   const router = useRouter();
@@ -17,6 +27,12 @@ export default function AdminDashboardContent() {
   const { products, deleteProduct, isLoading: productsLoading, refreshProducts } = useProducts();
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'products' | 'users'>('products');
+  const [trackerUsers, setTrackerUsers] = useState<TrackerUser[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [showUserForm, setShowUserForm] = useState(false);
+  const [newUser, setNewUser] = useState({ email: '', password: '', name: '' });
+  const [userFormError, setUserFormError] = useState('');
 
   const loadOrders = useCallback(async () => {
     try {
@@ -30,12 +46,28 @@ export default function AdminDashboardContent() {
     }
   }, []);
 
+  const loadTrackerUsers = useCallback(async () => {
+    try {
+      setUsersLoading(true);
+      const res = await fetch('/api/admin/users?role=TRACKER');
+      if (res.ok) {
+        const data = await res.json();
+        setTrackerUsers(data);
+      }
+    } catch (error) {
+      console.error("Error loading tracker users:", error);
+    } finally {
+      setUsersLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (isAuthenticated) {
       refreshProducts();
       loadOrders();
+      loadTrackerUsers();
     }
-  }, [isAuthenticated, refreshProducts, loadOrders]);
+  }, [isAuthenticated, refreshProducts, loadOrders, loadTrackerUsers]);
 
   if (!isAuthenticated) {
     return (
@@ -65,6 +97,44 @@ export default function AdminDashboardContent() {
   const handleLogout = () => {
     logout();
     router.push("/admin/login");
+  };
+
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setUserFormError('');
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...newUser, role: 'TRACKER' })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setUserFormError(data.error || 'Error al crear usuario');
+        return;
+      }
+      setTrackerUsers(prev => [data, ...prev]);
+      setShowUserForm(false);
+      setNewUser({ email: '', password: '', name: '' });
+    } catch (err) {
+      setUserFormError('Error de conexión');
+    }
+  };
+
+  const handleDeleteUser = async (id: string, name: string) => {
+    if (confirm(`¿Eliminar usuario "${name}"?`)) {
+      try {
+        const res = await fetch(`/api/admin/users/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          setTrackerUsers(prev => prev.filter(u => u.id !== id));
+        } else {
+          const data = await res.json();
+          alert(data.error || 'Error al eliminar');
+        }
+      } catch (err) {
+        alert('Error de conexión');
+      }
+    }
   };
 
   return (
@@ -111,18 +181,50 @@ export default function AdminDashboardContent() {
           ))}
         </div>
 
-        {/* Actions */}
-        <div className="flex flex-wrap gap-4 mb-8">
-          <Link
-            href="/admin/productos/nuevo"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-[#6B4423] text-[#F6D3B3] font-cinzel uppercase tracking-wider hover:bg-[#6B4423]/90 transition-colors rounded-lg"
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6 border-b border-[#6B4423]/10">
+          <button
+            onClick={() => setActiveTab('products')}
+            className={`px-6 py-3 font-cinzel text-sm border-b-2 transition-colors ${
+              activeTab === 'products'
+                ? 'border-[#6B4423] text-[#6B4423]'
+                : 'border-transparent text-[#6B4423]/50 hover:text-[#6B4423]'
+            }`}
           >
-            <Plus className="w-5 h-5" />
-            Nuevo Producto
-          </Link>
+            <span className="flex items-center gap-2">
+              <Package className="w-4 h-4" />
+              Productos
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`px-6 py-3 font-cinzel text-sm border-b-2 transition-colors ${
+              activeTab === 'users'
+                ? 'border-[#6B4423] text-[#6B4423]'
+                : 'border-transparent text-[#6B4423]/50 hover:text-[#6B4423]'
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              Usuarios de Tracking
+            </span>
+          </button>
         </div>
 
-        {/* Products Table */}
+        {activeTab === 'products' && (
+          <>
+            {/* Actions */}
+            <div className="flex flex-wrap gap-4 mb-8">
+              <Link
+                href="/admin/productos/nuevo"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[#6B4423] text-[#F6D3B3] font-cinzel uppercase tracking-wider hover:bg-[#6B4423]/90 transition-colors rounded-lg"
+              >
+                <Plus className="w-5 h-5" />
+                Nuevo Producto
+              </Link>
+            </div>
+
+            {/* Products Table */}
         <div className="bg-white rounded-lg border border-[#6B4423]/10 overflow-hidden mb-8">
           <div className="px-6 py-4 border-b border-[#6B4423]/10 flex items-center justify-between">
             <h2 className="font-cinzel text-xl text-[#6B4423]">Productos</h2>
@@ -313,6 +415,137 @@ export default function AdminDashboardContent() {
             </div>
           )}
         </div>
+        </>
+        )}
+
+        {activeTab === 'users' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="font-cinzel text-xl text-[#6B4423]">Usuarios de Tracking</h2>
+              <button
+                onClick={() => setShowUserForm(!showUserForm)}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[#889E81] text-white font-cinzel uppercase tracking-wider hover:bg-[#889E81]/90 transition-colors rounded-lg"
+              >
+                {showUserForm ? <X className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
+                {showUserForm ? 'Cancelar' : 'Nuevo Usuario'}
+              </button>
+            </div>
+
+            {showUserForm && (
+              <div className="bg-white rounded-lg border border-[#6B4423]/10 p-6">
+                <h3 className="font-cinzel text-lg text-[#6B4423] mb-4">Crear usuario de tracking</h3>
+                {userFormError && (
+                  <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded mb-4 font-cormorant text-sm">
+                    {userFormError}
+                  </div>
+                )}
+                <form onSubmit={handleCreateUser} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block font-cormorant text-sm text-[#6B4423]/70 mb-1">Nombre</label>
+                    <input
+                      type="text"
+                      value={newUser.name}
+                      onChange={(e) => setNewUser(prev => ({ ...prev, name: e.target.value }))}
+                      required
+                      className="w-full px-4 py-3 border border-[#6B4423]/20 font-cormorant bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-cormorant text-sm text-[#6B4423]/70 mb-1">Correo electrónico</label>
+                    <input
+                      type="email"
+                      value={newUser.email}
+                      onChange={(e) => setNewUser(prev => ({ ...prev, email: e.target.value }))}
+                      required
+                      className="w-full px-4 py-3 border border-[#6B4423]/20 font-cormorant bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-cormorant text-sm text-[#6B4423]/70 mb-1">Contraseña</label>
+                    <input
+                      type="password"
+                      value={newUser.password}
+                      onChange={(e) => setNewUser(prev => ({ ...prev, password: e.target.value }))}
+                      required
+                      className="w-full px-4 py-3 border border-[#6B4423]/20 font-cormorant bg-white"
+                    />
+                  </div>
+                  <div className="md:col-span-3">
+                    <button
+                      type="submit"
+                      className="px-6 py-3 bg-[#6B4423] text-[#F6D3B3] font-cinzel uppercase tracking-wider hover:bg-[#6B4423]/90 transition-colors"
+                    >
+                      Crear Usuario
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            <div className="bg-white rounded-lg border border-[#6B4423]/10 overflow-hidden">
+              {usersLoading && (
+                <div className="px-6 py-4 border-b border-[#6B4423]/10 flex items-center justify-between">
+                  <Loader2 className="w-5 h-5 animate-spin text-[#6B4423]" />
+                </div>
+              )}
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-[#F6D3B3]/20">
+                    <tr>
+                      <th className="px-6 py-3 text-left font-cinzel text-sm text-[#6B4423]">Nombre</th>
+                      <th className="px-6 py-3 text-left font-cinzel text-sm text-[#6B4423]">Email</th>
+                      <th className="px-6 py-3 text-left font-cinzel text-sm text-[#6B4423]">Estado</th>
+                      <th className="px-6 py-3 text-left font-cinzel text-sm text-[#6B4423]">Último acceso</th>
+                      <th className="px-6 py-3 text-right font-cinzel text-sm text-[#6B4423]">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#6B4423]/10">
+                    {trackerUsers.map((u) => (
+                      <tr key={u.id} className="hover:bg-[#F6D3B3]/10 transition-colors">
+                        <td className="px-6 py-4">
+                          <p className="font-cormorant text-sm text-[#6B4423]">{u.name}</p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <p className="font-cormorant text-sm text-[#6B4423]/70">{u.email}</p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-1 text-xs font-cinzel rounded ${
+                            u.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                          }`}>
+                            {u.isActive ? 'Activo' : 'Inactivo'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <p className="font-cormorant text-sm text-[#6B4423]/70">
+                            {u.lastLogin ? new Date(u.lastLogin).toLocaleDateString('es-GT') : 'Nunca'}
+                          </p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => handleDeleteUser(u.id, u.name)}
+                              className="p-2 text-[#6B4423]/60 hover:text-red-600 transition-colors"
+                              title="Eliminar"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {trackerUsers.length === 0 && !usersLoading && (
+                <div className="text-center py-12">
+                  <Users className="w-12 h-12 text-[#6B4423]/20 mx-auto mb-4" />
+                  <p className="font-cormorant text-[#6B4423]/60">No hay usuarios de tracking</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -122,14 +122,20 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum AdminRole {
+  ADMIN
+  TRACKER
+}
+
 model Admin {
-  id        String   @id @default(cuid())
-  email     String   @unique
+  id        String    @id @default(cuid())
+  email     String    @unique
   password  String
   name      String
-  isActive  Boolean  @default(true) @map("is_active")
+  role      AdminRole @default(ADMIN)
+  isActive  Boolean   @default(true) @map("is_active")
   lastLogin DateTime? @map("last_login")
-  createdAt DateTime @default(now()) @map("created_at")
+  createdAt DateTime  @default(now()) @map("created_at")
   
   @@map("admins")
 }

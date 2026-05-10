@@ -4,11 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAdmin } from "@/context/AdminContext";
 import Logo from "@/components/Logo";
-import { Eye, EyeOff, Lock, Mail } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, Package } from "lucide-react";
 
-export default function AdminLoginPage() {
+export default function TrackingLoginPage() {
   const router = useRouter();
-  const { login, isAuthenticated, isAdmin, isTracker } = useAdmin();
+  const { login, isAuthenticated, isTracker } = useAdmin();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -19,13 +19,9 @@ export default function AdminLoginPage() {
   useEffect(() => {
     if (isAuthenticated) {
       setIsRedirecting(true);
-      if (isTracker) {
-        router.push("/tracking");
-      } else {
-        router.push("/admin");
-      }
+      router.push("/tracking");
     }
-  }, [isAuthenticated, isAdmin, isTracker, router]);
+  }, [isAuthenticated, router]);
 
   if (isRedirecting) {
     return (
@@ -42,14 +38,12 @@ export default function AdminLoginPage() {
 
     const result = await login(email, password);
 
-    if (result.success) {
-      if (result.role === 'TRACKER') {
-        router.push("/tracking");
-      } else {
-        router.push("/admin");
-      }
+    if (result.success && result.role === 'TRACKER') {
+      router.push("/tracking");
+    } else if (result.success && result.role === 'ADMIN') {
+      setError("Los administradores deben usar el panel de administración");
     } else {
-      setError(result.error || "Usuario o contraseña incorrectos");
+      setError(result.error || "Credenciales incorrectas");
     }
 
     setIsLoading(false);
@@ -60,9 +54,12 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Logo variant="light" size="lg" showTagline />
-          <h1 className="font-cinzel text-2xl text-[#F6D3B3] mt-6 mb-2">
-            Panel de Administración
-          </h1>
+          <div className="flex items-center justify-center gap-2 mt-6 mb-2">
+            <Package className="w-6 h-6 text-[#889E81]" />
+            <h1 className="font-cinzel text-2xl text-[#F6D3B3]">
+              Rastreo de Pedidos
+            </h1>
+          </div>
           <p className="font-cormorant text-[#F6D3B3]/60">
             Ágape Studio
           </p>
@@ -91,7 +88,7 @@ export default function AdminLoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 border border-[#6B4423]/20 font-cormorant text-[#1A1A1A] focus:outline-none focus:border-[#6B4423] transition-colors"
-                  placeholder="admin@agape.studio"
+                  placeholder="tracker@agape.studio"
                   required
                 />
               </div>
@@ -124,27 +121,21 @@ export default function AdminLoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-4 bg-[#6B4423] text-[#F6D3B3] font-cinzel uppercase tracking-wider hover:bg-[#6B4423]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-4 bg-[#889E81] text-white font-cinzel uppercase tracking-wider hover:bg-[#889E81]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? "Ingresando..." : "Ingresar"}
             </button>
           </form>
 
           <div className="mt-4 text-center">
-            <a href="/tracking/login" className="font-cormorant text-sm text-[#6B4423]/60 hover:text-[#6B4423] transition-colors">
-              Soy usuario de tracking →
-            </a>
-          </div>
-
-          <div className="mt-4 text-center">
-            <a href="/" className="font-cormorant text-sm text-[#6B4423]/60 hover:text-[#6B4423] transition-colors">
-              ← Volver a la tienda
+            <a href="/admin/login" className="font-cormorant text-sm text-[#6B4423]/60 hover:text-[#6B4423] transition-colors">
+              ← Soy administrador
             </a>
           </div>
         </div>
 
         <p className="text-center font-cormorant text-xs text-[#F6D3B3]/40 mt-6">
-          Acceso exclusivo para administradores de Ágape Studio
+          Acceso exclusivo para personal de logística de Ágape Studio
         </p>
       </div>
     </div>

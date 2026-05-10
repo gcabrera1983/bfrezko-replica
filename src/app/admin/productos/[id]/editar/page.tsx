@@ -9,8 +9,14 @@ import { ArrowLeft, Plus, X, Loader2 } from "lucide-react";
 import CloudinaryUpload from "@/components/CloudinaryUpload";
 
 export default function EditarProductoPage() {
-  const { isAuthenticated } = useAdmin();
+  const { isAuthenticated, isTracker } = useAdmin();
   const router = useRouter();
+
+  useEffect(() => {
+    if (isAuthenticated && isTracker) {
+      router.push("/tracking");
+    }
+  }, [isAuthenticated, isTracker, router]);
   const params = useParams();
   const { products, updateProduct, getProductById, refreshProducts } = useProducts();
   

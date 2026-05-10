@@ -26,7 +26,13 @@ const statusOptions = [
 
 export default function OrderDetailPage({ params }: OrderDetailPageProps) {
   const router = useRouter()
-  const { isAuthenticated } = useAdmin()
+  const { isAuthenticated, isTracker } = useAdmin()
+
+  useEffect(() => {
+    if (isAuthenticated && isTracker) {
+      router.push("/tracking");
+    }
+  }, [isAuthenticated, isTracker, router]);
   const [order, setOrder] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)

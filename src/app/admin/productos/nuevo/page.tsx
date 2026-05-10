@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAdmin } from "@/context/AdminContext";
 import { useProducts } from "@/context/ProductsContext";
@@ -9,8 +9,14 @@ import { ArrowLeft, Plus, X, Loader2 } from "lucide-react";
 import CloudinaryUpload from "@/components/CloudinaryUpload";
 
 export default function NuevoProductoPage() {
-  const { isAuthenticated } = useAdmin();
+  const { isAuthenticated, isTracker } = useAdmin();
   const router = useRouter();
+
+  useEffect(() => {
+    if (isAuthenticated && isTracker) {
+      router.push("/tracking");
+    }
+  }, [isAuthenticated, isTracker, router]);
   const { addProduct } = useProducts();
 
   const [formData, setFormData] = useState({

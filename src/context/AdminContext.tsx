@@ -3,29 +3,42 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
+export type AdminRole = 'ADMIN' | 'TRACKER';
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  name: string;
+  role: AdminRole;
+  isActive: boolean;
+  lastLogin: string | null;
+  createdAt: string;
+}
+
 interface AdminContextType {
+  user: AdminUser | null;
   isAuthenticated: boolean;
-  login: (username: string, password: string) => boolean;
+  isAdmin: boolean;
+  isTracker: boolean;
+  login: (email: string, password: string) => Promise<{ success: boolean; role?: AdminRole; error?: string }>;
   logout: () => void;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
-// Credenciales simples (en producción esto debería estar en un backend)
-const ADMIN_USERNAME = "admin";
-const ADMIN_PASSWORD = "agape2024";
+const STORAGE_KEY = "agape-admin-user";
 
 export function AdminProvider({ children }: { children: React.ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<AdminUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Verificar si ya está logueado al cargar (solo en cliente)
   useEffect(() => {
     try {
       if (typeof window !== "undefined") {
-        const auth = localStorage.getItem("agape-admin-auth");
-        if (auth === "true") {
-          setIsAuthenticated(true);
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          setUser(parsed);
         }
       }
     } catch (e) {
@@ -34,26 +47,36 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  const login = (username: string, password: string): boolean => {
-    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-      setIsAuthenticated(true);
-      try {
-        if (typeof window !== "undefined") {
-          localStorage.setItem("agape-admin-auth", "true");
-        }
-      } catch (e) {
-        console.error("Error saving auth:", e);
+  const login = async (email: string, password: string) => {
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        return { success: false, error: data.error || 'Error al iniciar sesión' };
       }
-      return true;
+
+      setUser(data);
+      if (typeof window !== "undefined") {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      }
+      return { success: true, role: data.role };
+    } catch (e) {
+      console.error("Login error:", e);
+      return { success: false, error: 'Error de conexión' };
     }
-    return false;
   };
 
   const logout = () => {
-    setIsAuthenticated(false);
+    setUser(null);
     try {
       if (typeof window !== "undefined") {
-        localStorage.removeItem("agape-admin-auth");
+        localStorage.removeItem(STORAGE_KEY);
       }
     } catch (e) {
       console.error("Error removing auth:", e);
@@ -72,7 +95,14 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AdminContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AdminContext.Provider value={{
+      user,
+      isAuthenticated: !!user,
+      isAdmin: user?.role === 'ADMIN',
+      isTracker: user?.role === 'TRACKER',
+      login,
+      logout
+    }}>
       {children}
     </AdminContext.Provider>
   );
@@ -86,9 +116,8 @@ export function useAdmin() {
   return context;
 }
 
-// Hook para proteger rutas admin
-export function useRequireAuth() {
-  const { isAuthenticated } = useAdmin();
+export function useRequireAuth(requiredRole?: AdminRole) {
+  const { user, isAuthenticated } = useAdmin();
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
 
@@ -97,10 +126,19 @@ export function useRequireAuth() {
   }, []);
 
   useEffect(() => {
-    if (isClient && !isAuthenticated) {
+    if (!isClient) return;
+    if (!isAuthenticated) {
       router.push("/admin/login");
+      return;
     }
-  }, [isClient, isAuthenticated, router]);
+    if (requiredRole && user?.role !== requiredRole) {
+      if (user?.role === 'TRACKER') {
+        router.push("/tracking");
+      } else {
+        router.push("/admin");
+      }
+    }
+  }, [isClient, isAuthenticated, requiredRole, user, router]);
 
-  return isClient && isAuthenticated;
+  return isClient && isAuthenticated && (!requiredRole || user?.role === requiredRole);
 }
