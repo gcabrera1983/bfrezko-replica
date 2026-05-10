@@ -155,7 +155,7 @@ export default function CheckoutSuccessPage() {
           <div className="space-y-3">
             <p className="font-cormorant text-sm text-[#6B4423]/70">
               Te hemos enviado un correo de confirmación a:<br />
-              <strong className="text-[#6B4423]">{order?.customer?.email}</strong>
+              <strong className="text-[#6B4423]">{order?.customerEmail || order?.customer?.email}</strong>
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center mt-6">
