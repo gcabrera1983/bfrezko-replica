@@ -19,13 +19,13 @@ export default function Home() {
       <section className="relative h-[90vh] min-h-[700px] flex items-center justify-center">
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=1920&auto=format&fit=crop"
+            src="/hero-bg.jpg"
             alt="Ágape Studio Hero"
             fill
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-[#1A1A1A]/50" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#1A1A1A]/40 via-[#1A1A1A]/20 to-[#1A1A1A]/60" />
         </div>
         
         <div className="relative z-10 max-w-4xl mx-auto px-4 text-center">
