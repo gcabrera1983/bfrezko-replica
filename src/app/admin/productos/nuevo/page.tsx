@@ -185,7 +185,7 @@ export default function NuevoProductoPage() {
                     value={formData.price}
                     onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
                     className="w-full px-4 py-3 border border-[#6B4423]/20 font-cormorant focus:outline-none focus:border-[#6B4423]"
-                    placeholder="185.00"
+                    placeholder="150.00"
                   />
                 </div>
                 <div>
@@ -197,7 +197,7 @@ export default function NuevoProductoPage() {
                     value={formData.originalPrice}
                     onChange={(e) => setFormData(prev => ({ ...prev, originalPrice: e.target.value }))}
                     className="w-full px-4 py-3 border border-[#6B4423]/20 font-cormorant focus:outline-none focus:border-[#6B4423]"
-                    placeholder="250.00"
+                    placeholder="185.00"
                   />
                 </div>
               </div>
