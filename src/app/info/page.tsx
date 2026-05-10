@@ -26,7 +26,7 @@ export default function InfoPage() {
                 <div>
                   <h3 className="font-cinzel text-[#6B4423] mb-2">Tallas Disponibles</h3>
                   <p className="font-cormorant text-[#6B4423]/80">
-                    S, M, L y XL
+                    XS, S, M, L, XL, XXL y XXXL
                   </p>
                 </div>
               </div>
@@ -60,6 +60,43 @@ export default function InfoPage() {
                   </p>
                 </div>
               </div>
+            </div>
+
+            <div className="border-t border-[#6B4423]/10 mt-6 pt-6">
+              <h3 className="font-cinzel text-[#6B4423] mb-4">Guía de Tallas (cm)</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b-2 border-[#6B4423]/20">
+                      <th className="text-left py-2 px-3 font-cinzel text-[#6B4423]">Talla</th>
+                      <th className="text-center py-2 px-3 font-cinzel text-[#6B4423]">Pecho</th>
+                      <th className="text-center py-2 px-3 font-cinzel text-[#6B4423]">Largo</th>
+                      <th className="text-center py-2 px-3 font-cinzel text-[#6B4423]">Hombro</th>
+                    </tr>
+                  </thead>
+                  <tbody className="font-cormorant text-[#6B4423]/80">
+                    {[
+                      { talla: 'XS', pecho: '46', largo: '66', hombro: '40' },
+                      { talla: 'S', pecho: '49', largo: '69', hombro: '42' },
+                      { talla: 'M', pecho: '52', largo: '71', hombro: '44' },
+                      { talla: 'L', pecho: '55', largo: '73', hombro: '46' },
+                      { talla: 'XL', pecho: '58', largo: '75', hombro: '48' },
+                      { talla: 'XXL', pecho: '61', largo: '77', hombro: '50' },
+                      { talla: 'XXXL', pecho: '64', largo: '79', hombro: '52' },
+                    ].map((row, i) => (
+                      <tr key={row.talla} className={i % 2 === 0 ? 'bg-[#F6D3B3]/10' : ''}>
+                        <td className="py-2 px-3 font-cinzel text-[#6B4423]">{row.talla}</td>
+                        <td className="text-center py-2 px-3">{row.pecho}</td>
+                        <td className="text-center py-2 px-3">{row.largo}</td>
+                        <td className="text-center py-2 px-3">{row.hombro}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="font-cormorant text-xs text-[#6B4423]/60 mt-2">
+                * Medidas aproximadas en centímetros. Pueden variar ±2 cm.
+              </p>
             </div>
 
             <div className="border-t border-[#6B4423]/10 mt-6 pt-6">
