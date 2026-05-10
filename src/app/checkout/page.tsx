@@ -63,6 +63,10 @@ export default function CheckoutPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    if (name === 'department' && value) {
+      setShippingZone(value === 'Guatemala' ? 'capital' : 'interior');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
