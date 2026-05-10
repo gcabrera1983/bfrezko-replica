@@ -25,33 +25,36 @@ export default function Home() {
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#1A1A1A]/40 via-[#1A1A1A]/20 to-[#1A1A1A]/60" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#1A1A1A]/60 via-[#1A1A1A]/40 to-[#1A1A1A]/70" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(26,26,26,0.5)_0%,_transparent_70%)]" />
         </div>
         
         <div className="relative z-10 max-w-4xl mx-auto px-4 text-center">
-          <Logo variant="light" size="lg" showTagline />
-          <h1 className="font-cinzel text-3xl md:text-5xl lg:text-6xl text-[#F6D3B3] mt-8 mb-6 tracking-wide">
-            ROPA CRISTIANA
-            <br />
-            <span className="text-[#F6D3B3]/90">CON PROPÓSITO</span>
-          </h1>
-          <p className="font-cormorant text-xl md:text-2xl text-[#F6D3B3]/80 mb-10 max-w-2xl mx-auto italic">
-            "Cada prenda es un recordatorio del amor incondicional del Padre"
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/tienda"
-              className="inline-flex items-center justify-center px-8 py-4 bg-[#F6D3B3] text-[#6B4423] font-cinzel uppercase tracking-wider hover:bg-[#F6D3B3]/90 transition-colors"
-            >
-              Explorar Tienda
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Link>
-            <Link
-              href="/nosotros"
-              className="inline-flex items-center justify-center px-8 py-4 border-2 border-[#F6D3B3] text-[#F6D3B3] font-cinzel uppercase tracking-wider hover:bg-[#F6D3B3]/10 transition-colors"
-            >
-              Nuestra Historia
-            </Link>
+          <div className="inline-block px-6 py-8 md:px-10 md:py-10 rounded-2xl bg-black/20 backdrop-blur-sm">
+            <Logo variant="light" size="lg" showTagline />
+            <h1 className="font-cinzel text-3xl md:text-5xl lg:text-6xl text-[#F6D3B3] mt-8 mb-6 tracking-wide" style={{ textShadow: '0 4px 20px rgba(0,0,0,0.9), 0 2px 4px rgba(0,0,0,0.8)' }}>
+              ROPA CRISTIANA
+              <br />
+              <span className="text-[#F6D3B3]/95">CON PROPÓSITO</span>
+            </h1>
+            <p className="font-cormorant text-xl md:text-2xl text-[#F6D3B3] mb-8 max-w-2xl mx-auto italic" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.9), 0 1px 2px rgba(0,0,0,0.8)' }}>
+              "Cada prenda es un recordatorio del amor incondicional del Padre"
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/tienda"
+                className="inline-flex items-center justify-center px-8 py-4 bg-[#F6D3B3] text-[#6B4423] font-cinzel uppercase tracking-wider hover:bg-[#F6D3B3]/90 transition-colors"
+              >
+                Explorar Tienda
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Link>
+              <Link
+                href="/nosotros"
+                className="inline-flex items-center justify-center px-8 py-4 border-2 border-[#F6D3B3] text-[#F6D3B3] font-cinzel uppercase tracking-wider hover:bg-[#F6D3B3]/10 transition-colors"
+              >
+                Nuestra Historia
+              </Link>
+            </div>
           </div>
         </div>
       </section>
