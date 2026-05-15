@@ -140,7 +140,7 @@ export default function Footer() {
               </li>
               <li className="flex items-center text-[#F6D3B3]/70 text-sm font-cormorant">
                 <span className="mr-2"><MailIcon /></span>
-                <span>hola@agapestudio.com</span>
+                <a href="mailto:eitanrosal00@gmail.com" className="hover:text-[#F6D3B3] transition-colors">eitanrosal00@gmail.com</a>
               </li>
             </ul>
           </div>

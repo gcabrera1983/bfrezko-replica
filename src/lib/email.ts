@@ -105,7 +105,7 @@ export async function sendOrderConfirmationEmail(order: any) {
                 <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://agapestudio.com'}/rastreo?orden=${order.id}" style="background:#6B4423;color:#F6D3B3;padding:12px 24px;border-radius:4px;text-decoration:none;display:inline-block;font-weight:bold;">Rastrear mi pedido</a>
               </div>
 
-              <p style="color:#6B4423AA;font-size:12px;margin:24px 0 0;text-align:center;">Si tienes dudas, escríbenos a <a href="mailto:${ADMIN_EMAIL}" style="color:#6B4423;">${ADMIN_EMAIL}</a></p>
+              <p style="color:#6B4423AA;font-size:12px;margin:24px 0 0;text-align:center;">Si tienes dudas, escríbenos a <a href="mailto:${ADMIN_EMAIL}" style="color:#6B4423;">${ADMIN_EMAIL}</a><br>o escríbenos por WhatsApp al <a href="https://wa.me/50247476778" style="color:#6B4423;">+502 4747-6778</a></p>
             </td>
           </tr>
         </table>
@@ -203,7 +203,7 @@ export async function sendOrderStatusUpdateEmail(order: any, updateNote?: string
     <div style="text-align:center;margin-top:24px;">
       <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://agapestudio.com'}/rastreo?orden=${order.id}" style="background:#6B4423;color:#F6D3B3;padding:12px 24px;border-radius:4px;text-decoration:none;display:inline-block;font-weight:bold;">Ver seguimiento</a>
     </div>
-    <p style="color:#6B4423AA;font-size:12px;margin:24px 0 0;text-align:center;">Si tienes dudas, escríbenos a <a href="mailto:${ADMIN_EMAIL}" style="color:#6B4423;">${ADMIN_EMAIL}</a></p>
+    <p style="color:#6B4423AA;font-size:12px;margin:24px 0 0;text-align:center;">Si tienes dudas, escríbenos a <a href="mailto:${ADMIN_EMAIL}" style="color:#6B4423;">${ADMIN_EMAIL}</a><br>o escríbenos por WhatsApp al <a href="https://wa.me/50247476778" style="color:#6B4423;">+502 4747-6778</a></p>
   </div>
 </body>
 </html>`

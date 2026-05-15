@@ -223,10 +223,16 @@ export default function InfoPage() {
             ¿Tienes alguna pregunta? Contáctanos
           </p>
           <a 
-            href="mailto:hola@agapestudio.com" 
+            href="mailto:eitanrosal00@gmail.com" 
             className="inline-block px-8 py-3 bg-[#6B4423] text-[#F6D3B3] font-cinzel uppercase tracking-wider hover:bg-[#6B4423]/90 transition-colors"
           >
-            hola@agapestudio.com
+            eitanrosal00@gmail.com
+          </a>
+          <a 
+            href="https://wa.me/50247476778" 
+            className="inline-block px-8 py-3 bg-[#889E81] text-white font-cinzel uppercase tracking-wider hover:bg-[#889E81]/90 transition-colors ml-2"
+          >
+            WhatsApp +502 4747-6778
           </a>
         </section>
       </div>

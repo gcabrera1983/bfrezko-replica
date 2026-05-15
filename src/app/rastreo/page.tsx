@@ -263,10 +263,16 @@ function TrackingContent() {
               Si tienes problemas para rastrear tu pedido, contáctanos
             </p>
             <a 
-              href="mailto:hola@agapestudio.com"
+              href="mailto:eitanrosal00@gmail.com"
               className="inline-block px-6 py-2 border border-[#6B4423] text-[#6B4423] font-cormorant hover:bg-[#6B4423] hover:text-[#F6D3B3] transition-colors"
             >
-              hola@agapestudio.com
+              eitanrosal00@gmail.com
+            </a>
+            <a 
+              href="https://wa.me/50247476778"
+              className="inline-block px-6 py-2 border border-[#889E81] text-[#889E81] font-cormorant hover:bg-[#889E81] hover:text-white transition-colors ml-2"
+            >
+              WhatsApp +502 4747-6778
             </a>
           </div>
         )}

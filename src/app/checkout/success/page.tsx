@@ -192,10 +192,17 @@ export default function CheckoutSuccessPage() {
             ¿Tienes preguntas sobre tu pedido?<br />
             Contáctanos en{' '}
             <a 
-              href="mailto:hola@agapestudio.com" 
+              href="mailto:eitanrosal00@gmail.com" 
               className="text-[#6B4423] hover:underline"
             >
-              hola@agapestudio.com
+              eitanrosal00@gmail.com
+            </a>
+            {' '}o por WhatsApp{' '}
+            <a 
+              href="https://wa.me/50247476778" 
+              className="text-[#6B4423] hover:underline"
+            >
+              +502 4747-6778
             </a>
           </p>
         </div>
