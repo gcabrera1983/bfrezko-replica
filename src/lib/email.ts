@@ -3,7 +3,7 @@ import { Resend } from 'resend';
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 const FROM_EMAIL = process.env.FROM_EMAIL || 'onboarding@resend.dev';
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'hola@agapestudio.com';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'eitanrosal00@gmail.com';
 
 export async function sendOrderConfirmationEmail(order: any) {
   if (!resend) {
