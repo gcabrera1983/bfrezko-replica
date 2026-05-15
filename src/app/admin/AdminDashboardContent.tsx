@@ -121,14 +121,14 @@ export default function AdminDashboardContent() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setUserFormError(data.error || 'Error al crear usuario');
+        setUserFormError(data.error || `Error ${res.status}: ${JSON.stringify(data)}`);
         return;
       }
       setTrackerUsers(prev => [data, ...prev]);
       setShowUserForm(false);
       setNewUser({ email: '', password: '', name: '' });
-    } catch (err) {
-      setUserFormError('Error de conexión');
+    } catch (err: any) {
+      setUserFormError(`Error de conexión: ${err.message || 'desconocido'}`);
     }
   };
 
