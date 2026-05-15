@@ -72,8 +72,15 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json(user, { status: 201 })
-  } catch (error) {
+  } catch (error: any) {
     console.error('[API POST /admin/users] Error:', error)
+    const message = error?.message || ''
+    if (message.includes('column') && message.includes('role')) {
+      return NextResponse.json(
+        { error: 'La base de datos necesita actualización. Ejecuta el script SQL fix-admin-role.sql en Supabase.' },
+        { status: 500 }
+      )
+    }
     return NextResponse.json(
       { error: 'Error al crear usuario' },
       { status: 500 }
